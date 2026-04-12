@@ -13,9 +13,11 @@
   pip install langchain-community
 """
 
+import csv
 import json
 import os
-import csv
+
+from langchain_community.document_loaders import CSVLoader
 
 
 # ============================================================
@@ -73,8 +75,6 @@ def demo_csv_loader(csv_path):
     """
     print("=== 演示 1：CSVLoader 基本用法 ===")
 
-    from langchain_community.document_loaders import CSVLoader
-
     loader = CSVLoader(csv_path)
     docs = loader.load()
 
@@ -94,8 +94,6 @@ def demo_csv_advanced(csv_path):
     CSVLoader 支持指定列、自定义分隔符等。
     """
     print("\n=== 演示 2：CSVLoader 高级用法 ===")
-
-    from langchain_community.document_loaders import CSVLoader
 
     # source_column: 将某一列的值作为 metadata.source
     loader = CSVLoader(csv_path, source_column="name")
@@ -127,18 +125,15 @@ def demo_json_loader(json_path):
 
     try:
         from langchain_community.document_loaders import JSONLoader
-
         # jq 表达式 ".[]" 遍历数组每个元素
         loader = JSONLoader(
             json_path,
             jq_schema=".[]",
             text_content=False,  # False: 提取到的对象转为 JSON 字符串
         )
-    except ImportError as e:
-        print(f"跳过: 需要安装 jq（{e}）")
-        print("  安装: pip install jq")
+    except ImportError:
+        print("跳过: 需要安装 jq（pip install jq）")
         return
-
     docs = loader.load()
     print(f"jq='.[]'（遍历数组）: {len(docs)} 个文档")
     for doc in docs:
@@ -187,6 +182,7 @@ def demo_json_nested(nested_json_path):
     except ImportError:
         print("跳过: 需要 pip install jq")
         return
+
     docs = loader.load()
     print(f"jq='.frameworks[]': {len(docs)} 个文档")
     for doc in docs:
@@ -195,7 +191,6 @@ def demo_json_nested(nested_json_path):
 
 
 if __name__ == "__main__":
-    import os
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     csv_path, json_path, nested_json_path = create_sample_files()

@@ -13,11 +13,11 @@ PyPDFLoader 将 PDF 文件每页加载为一个 Document。
 
 import os
 
+from langchain_community.document_loaders import PyPDFLoader
+
 
 def create_sample_pdf():
     """创建示例 PDF 文件（如果没有）"""
-    import os
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     pdf_path = "sample.pdf"
 
     if os.path.exists(pdf_path):
@@ -26,24 +26,24 @@ def create_sample_pdf():
     # 用 fpdf2 生成示例 PDF
     try:
         from fpdf import FPDF
-
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Helvetica", size=16)
-        pdf.cell(0, 10, "LangChain Study Guide", ln=True, align="C")
-        pdf.set_font("Helvetica", size=12)
-        pdf.multi_cell(0, 8, "Chapter 1: Introduction\nLangChain is a framework for building LLM applications.")
-        pdf.add_page()
-        pdf.set_font("Helvetica", size=12)
-        pdf.multi_cell(0, 8, "Chapter 2: Core Concepts\nModels, Prompts, Output Parsers, Chains, Retrievers.")
-        pdf.add_page()
-        pdf.set_font("Helvetica", size=12)
-        pdf.multi_cell(0, 8, "Chapter 3: RAG\nRetrieval Augmented Generation - the core pattern for AI knowledge.")
-        pdf.output(pdf_path)
-        return pdf_path
     except ImportError:
         print("需要 fpdf2 来生成示例 PDF: pip install fpdf2")
         return None
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=16)
+    pdf.cell(0, 10, "LangChain Study Guide", ln=True, align="C")
+    pdf.set_font("Helvetica", size=12)
+    pdf.multi_cell(0, 8, "Chapter 1: Introduction\nLangChain is a framework for building LLM applications.")
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    pdf.multi_cell(0, 8, "Chapter 2: Core Concepts\nModels, Prompts, Output Parsers, Chains, Retrievers.")
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    pdf.multi_cell(0, 8, "Chapter 3: RAG\nRetrieval Augmented Generation - the core pattern for AI knowledge.")
+    pdf.output(pdf_path)
+    return pdf_path
 
 
 # ============================================================
@@ -55,8 +55,6 @@ def demo_basic(pdf_path):
     PyPDFLoader 默认每页生成一个 Document。
     """
     print("=== 演示 1：PyPDFLoader 基本用法 ===")
-
-    from langchain_community.document_loaders import PyPDFLoader
 
     loader = PyPDFLoader(pdf_path)
     docs = loader.load()
@@ -78,8 +76,6 @@ def demo_lazy_load(pdf_path):
     """
     print("\n=== 演示 2：懒加载 ===")
 
-    from langchain_community.document_loaders import PyPDFLoader
-
     loader = PyPDFLoader(pdf_path)
 
     print("逐页懒加载:")
@@ -88,6 +84,7 @@ def demo_lazy_load(pdf_path):
 
 
 if __name__ == "__main__":
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     pdf_path = create_sample_pdf()
     if pdf_path and os.path.exists(pdf_path):
         demo_basic(pdf_path)

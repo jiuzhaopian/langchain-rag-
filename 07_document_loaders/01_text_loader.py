@@ -17,6 +17,8 @@ TextLoader 返回单个 Document（一个文件 = 一个 Document）。
   pip install langchain-community
 """
 
+import os
+
 from langchain_community.document_loaders import TextLoader
 from langchain_core.documents import Document
 
@@ -111,8 +113,6 @@ def demo_encoding():
 
 
 if __name__ == "__main__":
-    # 创建示例文件
-    import os
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     sample_path = "sample.txt"

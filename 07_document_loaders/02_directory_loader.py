@@ -15,6 +15,8 @@ DirectoryLoader 递归扫描目录，将匹配的文件批量加载为 Document 
 """
 
 import os
+import shutil
+
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 
 
@@ -113,18 +115,8 @@ def demo_custom_loader():
     print("  loader_cls=UnstructuredHTMLLoader -> HTML 文件")
     print("  loader_cls=PythonLoader      -> Python 源码文件")
 
-    # 示例：用 TextLoader 加载 .md 文件
-    print("\n用 TextLoader 加载 .md 文件:")
-    loader = DirectoryLoader(
-        ".",
-        glob="*.md",
-        loader_cls=TextLoader,
-    )
-    # print(f"找到 {len(loader.load())} 个 .md 文件")
-
 
 if __name__ == "__main__":
-    import sys
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     docs_dir = "docs"
@@ -144,5 +136,4 @@ if __name__ == "__main__":
     demo_advanced()
     demo_custom_loader()
 
-    import shutil
     shutil.rmtree(docs_dir, ignore_errors=True)
