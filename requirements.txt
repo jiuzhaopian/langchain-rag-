@@ -1,0 +1,29 @@
+# LangChain 学习项目 - 依赖清单
+# 基于 LangChain 1.2.x
+
+# 核心框架
+langchain>=1.2.0
+langchain-core>=0.3.0
+
+# ChatOpenAI（OpenAI 兼容接口，用于 DashScope）
+langchain-openai>=1.0.0
+
+# DeepSeek 官方集成
+langchain-deepseek>=0.1.0
+
+# 通义千问 ChatTongyi（DashScope 原生接口）
+dashscope>=1.14.0
+
+# 智谱 GLM（langchain-community 官方集成）
+langchain-community>=0.3.0
+zhipuai>=2.0.0
+
+# 本地模型 Ollama
+langchain-ollama>=0.3.0
+
+# Text Splitters
+langchain-text-splitters>=0.3.0
+
+# Embeddings + VectorStore
+langchain-community>=0.3.0
+numpy>=1.24.0

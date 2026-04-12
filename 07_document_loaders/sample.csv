@@ -1,0 +1,4 @@
+name,description,category
+LangChain,LLM 应用开发框架,AI
+LlamaIndex,数据索引框架,AI
+FastAPI,Python Web 框架,Web

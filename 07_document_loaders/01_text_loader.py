@@ -1,0 +1,128 @@
+"""
+01_text_loader.py - TextLoader 文本文件加载器
+
+TextLoader 是最基础的文档加载器，将本地文本文件加载为 Document 对象。
+Document 是 LangChain 的核心数据结构：page_content（文本内容）+ metadata（元数据）。
+
+Document 结构:
+  - page_content: str       文本内容
+  - metadata: dict          元数据（如 source 文件路径、行号等）
+
+TextLoader 返回单个 Document（一个文件 = 一个 Document）。
+
+参考文档：
+  - TextLoader: https://python.langchain.com/docs/integrations/document_loaders/text/
+
+安装：
+  pip install langchain-community
+"""
+
+from langchain_community.document_loaders import TextLoader
+from langchain_core.documents import Document
+
+
+# ============================================================
+# 演示 1：加载单个文本文件
+# ============================================================
+
+def demo_load_single():
+    """
+    加载单个文本文件，返回一个 Document。
+    """
+    print("=== 演示 1：加载单个文本文件 ===")
+
+    loader = TextLoader("./sample.txt")
+    docs = loader.load()
+
+    print(f"加载了 {len(docs)} 个文档")
+    doc = docs[0]
+    print(f"类型: {type(doc).__name__}")
+    print(f"元数据: {doc.metadata}")
+    print(f"内容前 100 字符: {doc.page_content[:100]}")
+    print(f"内容长度: {len(doc.page_content)} 字符")
+
+
+# ============================================================
+# 演示 2：Document 对象详解
+# ============================================================
+
+def demo_document():
+    """
+    Document 是 LangChain 的核心数据结构，贯穿整个 RAG 流程：
+    Loaders 加载 → Splitters 切分 → VectorStore 存储 → Retriever 检索
+    """
+    print("\n=== 演示 2：Document 对象详解 ===")
+
+    # 手动创建 Document
+    doc = Document(
+        page_content="LangChain 是一个用于构建 LLM 应用的框架。",
+        metadata={
+            "source": "手动创建",
+            "author": "demo",
+            "page": 1,
+        },
+    )
+    print(f"page_content: {doc.page_content}")
+    print(f"metadata: {doc.metadata}")
+
+    # Document 是可变的
+    doc.metadata["updated"] = True
+    print(f"修改后 metadata: {doc.metadata}")
+
+
+# ============================================================
+# 演示 3：懒加载 lazy_load
+# ============================================================
+
+def demo_lazy_load():
+    """
+    lazy_load() 返回生成器，逐条产出 Document。
+    适用于大文件或批量文件，避免一次性全部加载到内存。
+    """
+    print("\n=== 演示 3：懒加载 lazy_load ===")
+
+    loader = TextLoader("./sample.txt")
+
+    # lazy_load 返回 Iterator[Document]
+    for i, doc in enumerate(loader.lazy_load()):
+        print(f"第 {i+1} 个文档: {doc.metadata}")
+        print(f"  内容: {doc.page_content[:80]}...")
+
+
+# ============================================================
+# 演示 4：编码和错误处理
+# ============================================================
+
+def demo_encoding():
+    """
+    TextLoader 默认用 'utf-8' 编码读取文件。
+    遇到 GBK/GB2312 等中文编码文件时，需要手动指定。
+    """
+    print("\n=== 演示 4：编码处理 ===")
+
+    # 指定编码
+    loader_gbk = TextLoader("./sample_gbk.txt", encoding="gbk")
+    print("GBK 编码加载: TextLoader('./sample_gbk.txt', encoding='gbk')")
+
+    # 自动检测编码（需要 chardet 或 cchardet）
+    # loader_auto = TextLoader("./sample.txt", autodetect_encoding=True)
+
+    print("编码参数: encoding='utf-8'(默认) / 'gbk' / 'gb2312' / autodetect_encoding=True")
+
+
+if __name__ == "__main__":
+    # 创建示例文件
+    import os
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+    sample_path = "sample.txt"
+    if not os.path.exists(sample_path):
+        with open(sample_path, "w", encoding="utf-8") as f:
+            f.write("LangChain 是一个用于构建 LLM 应用的框架。\n")
+            f.write("它提供了多种工具和抽象，用于连接大语言模型与外部数据源。\n")
+            f.write("核心概念包括：Models、Prompts、OutputParsers、Chains、Retrievers。\n")
+
+    demo_load_single()
+    demo_document()
+    demo_lazy_load()
+    demo_encoding()
