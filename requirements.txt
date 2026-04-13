@@ -24,6 +24,11 @@ langchain-ollama>=0.3.0
 # Text Splitters
 langchain-text-splitters>=0.3.0
 
+# Document Loaders 可选依赖（按需安装）
+# jq              -> JSONLoader 的 jq 表达式支持
+# pypdf           -> PyPDFLoader
+# beautifulsoup4  -> WebBaseLoader
+
 # Embeddings + VectorStore
 langchain-community>=0.3.0
 numpy>=1.24.0

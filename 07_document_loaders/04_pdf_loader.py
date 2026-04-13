@@ -5,7 +5,7 @@ PyPDFLoader 将 PDF 文件每页加载为一个 Document。
 需要安装 pypdf 包（LangChain 社区版 PDF 加载的默认依赖）。
 
 参考文档：
-  - PyPDFLoader: https://python.langchain.com/docs/integrations/document_loaders/pypdf/
+  - PyPDFLoader: https://reference.langchain.com/python/langchain-community/document_loaders/pypdf/PyPDFLoader
 
 安装：
   pip install langchain-community pypdf

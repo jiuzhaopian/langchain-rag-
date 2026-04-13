@@ -8,7 +8,7 @@ DirectoryLoader 递归扫描目录，将匹配的文件批量加载为 Document 
 常用: loader_cls=TextLoader, glob="**/*.txt"
 
 参考文档：
-  - DirectoryLoader: https://python.langchain.com/docs/integrations/document_loaders/directory/
+  - DirectoryLoader: https://reference.langchain.com/python/langchain-community/document_loaders/fs/DirectoryLoader
 
 安装：
   pip install langchain-community

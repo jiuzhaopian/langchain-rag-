@@ -6,8 +6,8 @@
 - JSONLoader: 用 jq 表达式从 JSON 中提取字段作为 Document 内容
 
 参考文档：
-  - CSVLoader: https://python.langchain.com/docs/integrations/document_loaders/csv/
-  - JSONLoader: https://python.langchain.com/docs/integrations/document_loaders/json/
+  - CSVLoader: https://reference.langchain.com/python/langchain-community/document_loaders/csv/CSVLoader
+  - JSONLoader: https://reference.langchain.com/python/langchain-community/document_loaders/json/JSONLoader
 
 安装：
   pip install langchain-community
@@ -17,7 +17,7 @@ import csv
 import json
 import os
 
-from langchain_community.document_loaders import CSVLoader
+from langchain_community.document_loaders import CSVLoader, JSONLoader  # noqa: JSONLoader 需要可选依赖 jq
 
 
 # ============================================================
@@ -124,8 +124,6 @@ def demo_json_loader(json_path):
     print("\n=== 演示 3：JSONLoader 基本用法 ===")
 
     try:
-        from langchain_community.document_loaders import JSONLoader
-        # jq 表达式 ".[]" 遍历数组每个元素
         loader = JSONLoader(
             json_path,
             jq_schema=".[]",
@@ -173,7 +171,6 @@ def demo_json_nested(nested_json_path):
     print("\n=== 演示 4：嵌套 JSON ===")
 
     try:
-        from langchain_community.document_loaders import JSONLoader
         loader = JSONLoader(
             nested_json_path,
             jq_schema=".frameworks[]",

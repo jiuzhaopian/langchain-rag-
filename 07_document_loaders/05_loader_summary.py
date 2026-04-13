@@ -20,11 +20,11 @@ def demo_document_structure():
     """
     print("=== Document 数据结构 ===")
     print("""
-Document
-  |- page_content: str    # 文本内容
-  |- metadata: dict       # 元数据
-  |- type: str = "Document"
-    """)
+        Document
+          |- page_content: str    # 文本内容
+          |- metadata: dict       # 元数据
+          |- type: str = "Document"
+            """)
 
     doc = Document(
         page_content="LangChain 是 LLM 应用开发框架",
@@ -81,6 +81,16 @@ def demo_loader_cheatsheet():
 | UnstructuredLoader| langchain-community | unstructured| 通用（HTML/DOCX/PPT 等）|
 | WebBaseLoader     | langchain-community | bs4        | 网页（基于 BeautifulSoup）|
 | PythonLoader      | langchain-community | 无         | Python 源码文件 |
+
+官方 API 参考：
+  TextLoader:        https://reference.langchain.com/python/langchain-community/document_loaders/text/TextLoader
+  DirectoryLoader:   https://reference.langchain.com/python/langchain-community/document_loaders/fs/DirectoryLoader
+  CSVLoader:         https://reference.langchain.com/python/langchain-community/document_loaders/csv/CSVLoader
+  JSONLoader:        https://reference.langchain.com/python/langchain-community/document_loaders/json/JSONLoader
+  PyPDFLoader:       https://reference.langchain.com/python/langchain-community/document_loaders/pypdf/PyPDFLoader
+  UnstructuredLoader:https://reference.langchain.com/python/langchain-unstructured/document_loaders/UnstructuredLoader
+  WebBaseLoader:     https://reference.langchain.com/python/langchain-community/document_loaders/web_base/WebBaseLoader
+  PythonLoader:      https://reference.langchain.com/python/langchain-community/document_loaders/python/PythonLoader
 
 导入方式统一:
   from langchain_community.document_loaders import TextLoader, CSVLoader, ...

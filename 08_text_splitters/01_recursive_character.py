@@ -13,7 +13,7 @@ RecursiveCharacterTextSplitter 是 LangChain 最常用的文本切分器。
 这样保证在语义自然的位置切分，而不是在句子中间硬切。
 
 参考文档：
-  - https://python.langchain.com/docs/how_to/recursive_text_splitter/
+  - RecursiveCharacterTextSplitter: https://reference.langchain.com/python/langchain-text-splitters/text_splitters/recursive_character_text_splitter/RecursiveCharacterTextSplitter
 
 安装：
   pip install langchain-text-splitters
