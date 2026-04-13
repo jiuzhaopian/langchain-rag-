@@ -11,6 +11,26 @@ JSONLoader 用 jq 表达式从 JSON 文件中提取内容，生成 Document 列�
 安装：
   pip install langchain-community jq
   # jq 是可选依赖，未安装时 JSONLoader 会抛出 ImportError
+
+jq 常用语法速查（配合 JSONLoader 的 jq_schema 参数）：
+  基础选择：
+    .          当前对象
+    .key       取字段值
+    .[index]   取数组元素（从 0 开始）
+    .[]        遍历数组所有元素
+  管道组合：
+    .[] | .key      遍历数组，取每个元素的 key 字段
+    .[] | .a + .b   遍历数组，拼接两个字段
+  过滤筛选：
+    .[] | select(.status == "active")   只保留 status 为 active 的元素
+    .[] | select(.age > 18)              只保留 age 大于 18 的元素
+  构造输出：
+    .[] | tostring                        将对象转为 JSON 字符串（保留中文）
+    .[] | "名称: " + .name               拼接固定文本和字段值
+    .[] | {name, desc}                   只保留指定字段，构造新对象
+  嵌套访问：
+    .frameworks[]           访问嵌套数组
+    .users[0].address.city  多层嵌套取值
 """
 
 import json
