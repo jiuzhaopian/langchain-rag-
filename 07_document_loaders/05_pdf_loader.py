@@ -86,11 +86,72 @@ def demo_lazy_load(pdf_path):
         print(f"  第 {i+1} 页: {len(doc.page_content)} 字符")
 
 
+# ============================================================
+# 演示 3：layout 提取模式
+# ============================================================
+
+def demo_layout_mode():
+    """
+    extraction_mode="layout" 按页面渲染布局提取文本，
+    保留表格的固定宽度对齐格式，更贴近 PDF 的视觉效果。
+    extraction_mode="plain"（默认）按文本流提取，表格格式会丢失。
+    """
+    print("\n=== 演示 3：plain vs layout 提取模式 ===")
+
+    pdf_path = os.path.join(DATA_DIR, "报销制度.pdf")
+    if not os.path.exists(pdf_path):
+        print(f"跳过: {pdf_path} 不存在")
+        return
+
+    # plain 模式（默认）
+    loader_plain = PyPDFLoader(pdf_path, extraction_mode="plain")
+    doc_plain = loader_plain.load()[0]
+
+    # layout 模式
+    loader_layout = PyPDFLoader(pdf_path, extraction_mode="layout")
+    doc_layout = loader_layout.load()[0]
+
+    print(f"plain 模式第1页: {len(doc_plain.page_content)} 字符")
+    print(doc_plain.page_content[:300])
+    print(f"\nlayout 模式第1页: {len(doc_layout.page_content)} 字符")
+    print(doc_layout.page_content[:300])
+    print("\n对比: layout 模式保留了表格的列对齐格式，plain 模式丢失了表格结构")
+
+
+# ============================================================
+# 演示 4：extract_images 图片提取
+# ============================================================
+
+def demo_extract_images():
+    """
+    extract_images=True 提取 PDF 中的嵌入图片。
+    images_inner_format 控制图片在文本中的输出格式：
+      - "text"（默认）: 图片内容原样输出
+      - "markdown-img": 包装为 ![alt](#) 格式
+      - "html-img": 包装为 <img alt="body" src="#"/> 格式
+    images_parser 可选配 OCR 解析器（如 RapidOCRBlobParser）识别图片中的文字。
+    """
+    print("\n=== 演示 4：extract_images 图片提取 ===")
+    print("extract_images=True 需要额外依赖（如 rapidocr-onnxruntime），沙箱未安装")
+    print("示例代码（需要 pip install rapidocr-onnxruntime）:")
+    print()
+    print('  from langchain_community.document_loaders import PyPDFLoader')
+    print('  from langchain_community.document_loaders.blob_loaders import BlobLoader')
+    print('  from langchain_community.document_loaders.parsers.images import RapidOCRBlobParser')
+    print()
+    print('  loader = PyPDFLoader(')
+    print('      "报销制度.pdf",')
+    print('      extract_images=True,')
+    print('      images_parser=RapidOCRBlobParser(),')
+    print('      images_inner_format="markdown-img",  # 图片输出为 ![alt](#)')
+    print('  )')
+    print('  docs = loader.load()')
+
+
 if __name__ == "__main__":
     pdf_path = create_sample_pdf()
     if pdf_path and os.path.exists(pdf_path):
         demo_basic(pdf_path)
         demo_lazy_load(pdf_path)
-
-    ## 读取自己的pdf文件
-    demo_basic(pdf_path = os.path.join(DATA_DIR, "请假制度.pdf"))
+    demo_layout_mode()
+    demo_extract_images()
