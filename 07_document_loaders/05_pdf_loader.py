@@ -118,9 +118,139 @@ def demo_layout_mode():
     print("\n对比: layout 模式保留了表格的列对齐格式，plain 模式丢失了表格结构")
 
 
+# ============================================================
+# 演示 4：PDF 图片提取 + OCR
+# ============================================================
+
+def demo_extract_images():
+    """
+    从 PDF 中提取嵌入图片并通过 OCR 识别图片文字。
+
+    方案：PyMuPDF (fitz) 提取图片 + RapidOCR 识别 + 手动拼装 Document。
+    原因：PyPDFLoader 的 extract_images 在 pypdf 6.10.0 下存在图片数据丢失问题，
+    提取后的图片经 OCR 输出为空（验证详见 extract_images_research/README.md）。
+
+    images_inner_format 控制图片输出格式：
+      - "text"（默认）: 纯 OCR 文字
+      - "markdown-img": ![...] base64 图片 + OCR 文字
+      - "html-img": <img src=base64> + OCR 文字
+
+    依赖: pip install pymupdf rapidocr-onnxruntime reportlab Pillow
+    """
+    print("\n=== 演示 4：PDF 图片提取 + OCR ===")
+
+    try:
+        import fitz  # pymupdf
+    except ImportError:
+        print("跳过: 需要 pip install pymupdf")
+        return
+
+    try:
+        from rapidocr_onnxruntime import RapidOCR
+    except ImportError:
+        print("跳过: 需要 pip install rapidocr-onnxruntime")
+        return
+
+    # --- 4a: 提取 PDF 中的图片 ---
+    print("\n--- 4a: PyMuPDF 提取 PDF 图片 ---")
+    img_path = os.path.join(DATA_DIR, "test_invoice.png")
+    pdf_path = os.path.join(DATA_DIR, "test_invoice.pdf")
+
+    if not os.path.exists(pdf_path):
+        # 创建含图片的测试 PDF
+        try:
+            from PIL import Image, ImageDraw
+            import reportlab.lib.pagesizes as ps
+            from reportlab.pdfgen import canvas
+        except ImportError:
+            print("跳过: 需要 reportlab + Pillow")
+            return
+
+        os.makedirs(DATA_DIR, exist_ok=True)
+        # 生成发票图片
+        img = Image.new("RGB", (400, 200), color="white")
+        draw = ImageDraw.Draw(img)
+        draw.rectangle([0, 0, 399, 199], outline="black", width=2)
+        draw.text((30, 30), "Invoice #2024-001", fill="black")
+        draw.text((30, 80), "Total: 12800.00 RMB", fill="black")
+        draw.text((30, 130), "Date: 2024-03-15", fill="black")
+        img.save(img_path)
+
+        c = canvas.Canvas(pdf_path, pagesize=ps.A4)
+        c.setFont("Helvetica", 14)
+        c.drawString(100, 700, "This PDF contains an embedded invoice image:")
+        c.drawImage(img_path, 100, 400, width=400, height=200)
+        c.showPage()
+        c.save()
+        print(f"已生成测试 PDF: {pdf_path}")
+
+    # 提取图片
+    pdf_doc = fitz.open(pdf_path)
+    page = pdf_doc[0]
+    images = page.get_images(full=True)
+    print(f"共找到 {len(images)} 个嵌入图片")
+
+    for idx, img_info in enumerate(images):
+        xref = img_info[0]
+        bi = pdf_doc.extract_image(xref)
+        print(f"  [{idx}] 格式={bi['ext']}, 大小={len(bi['image'])}字节")
+
+    pdf_doc.close()
+
+    # --- 4b: OCR 识别 ---
+    print("\n--- 4b: OCR 识别提取的图片 ---")
+    ocr = RapidOCR()
+
+    # 对原图 OCR
+    with open(img_path, "rb") as f:
+        original_bytes = f.read()
+
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+        f.write(original_bytes)
+        tmp_path = f.name
+    result_orig, _ = ocr(tmp_path)
+    os.unlink(tmp_path)
+    print(f"原图 OCR: {[line[1] for line in result_orig] if result_orig else []}")
+
+    # 对 PyMuPDF 提取的图片 OCR
+    pdf_doc = fitz.open(pdf_path)
+    xref = images[0][0]
+    bi = pdf_doc.extract_image(xref)
+    extracted_bytes = bi["image"]
+    pdf_doc.close()
+
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+        f.write(extracted_bytes)
+        tmp_path = f.name
+    result_ext, _ = ocr(tmp_path)
+    os.unlink(tmp_path)
+    print(f"提取图 OCR: {[line[1] for line in result_ext] if result_ext else []}")
+    print(f"结果一致: {result_orig == result_ext}")
+
+    # --- 4c: images_inner_format 三种格式 ---
+    print("\n--- 4c: images_inner_format 三种格式 ---")
+    import base64
+
+    ocr_text = "\n".join(line[1] for line in result_ext) if result_ext else ""
+    b64 = base64.b64encode(extracted_bytes).decode()
+
+    formats = {
+        "text": ocr_text,
+        "markdown-img": f"![Extracted image](data:image/png;base64,{b64})\n{ocr_text}",
+        "html-img": f'<img src="data:image/png;base64,{b64}" />\n{ocr_text}',
+    }
+    for fmt, content in formats.items():
+        preview = content[:100].replace("\n", " ")
+        if fmt != "text":
+            preview = content.split("\n")[0][:60] + f"... + OCR文字"
+        print(f"  [{fmt}] {preview}")
+
+
 if __name__ == "__main__":
     pdf_path = create_sample_pdf()
     if pdf_path and os.path.exists(pdf_path):
         demo_basic(pdf_path)
         demo_lazy_load(pdf_path)
     demo_layout_mode()
+    demo_extract_images()

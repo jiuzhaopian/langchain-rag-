@@ -69,6 +69,25 @@ LangChain 1.x 已将旧版 LLMs（纯文本补全）和 Chat Models 合并为**�
 ├── 02_parallel_branch.py      RunnableParallel + RunnableBranch
 ├── 03_passthrough_lambda.py    RunnablePassthrough/Pick + RunnableLambda
 └── README.md
+
+07_document_loaders/ ← Document Loaders 文档加载
+├── 01_text_loader.py          TextLoader 基础
+├── 02_directory_loader.py      DirectoryLoader 目录加载
+├── 03_csv_json_loader.py      CSV/JSON 文件加载
+├── 04_pdf_loader.py            PDF 文件加载
+├── 05_web_loader.py            Web 内容加载
+└── README.md
+
+08_text_splitters/   ← Text Splitters 文本分割
+├── 01_character_splitter.py    字符分割器
+├── 02_recursive_splitter.py    递归字符分割器
+└── README.md
+
+09_retrieval/         ← Retrieval 检索（新增）
+├── 01_vector_store.py          InMemoryVectorStore 基础
+├── 02_retriever.py            Retriever 体系（VectorStore/BM25/MultiQuery）
+├── 03_rag_chain.py            完整 RAG 链
+└── README.md
 ```
 
 ## 环境准备
@@ -102,3 +121,5 @@ python 01_chat_models/01_openai_compatible.py
 - ChatTongyi 集成: https://python.langchain.com/docs/integrations/chat/tongyi/
 - ChatOllama 集成: https://python.langchain.com/docs/integrations/chat/ollama/
 - OpenAIEmbeddings 集成: https://python.langchain.com/docs/integrations/text_embedding/openai/
+- LangChain Retrieval: https://python.langchain.com/oss/api_reference/core/retrievers.html
+- LangChain VectorStore: https://python.langchain.com/oss/api_reference/core/vectorstores.html

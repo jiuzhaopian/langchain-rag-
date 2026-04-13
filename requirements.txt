@@ -24,6 +24,9 @@ langchain-ollama>=0.3.0
 # Text Splitters
 langchain-text-splitters>=0.3.0
 
+# 文档检索（可选依赖）
+rank_bm25>=0.2.2  # BM25Retriever 需要
+
 # Document Loaders 可选依赖（按需安装）
 # jq              -> JSONLoader 的 jq 表达式支持
 # pypdf           -> PyPDFLoader
