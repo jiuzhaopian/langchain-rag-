@@ -11,7 +11,7 @@ Document 结构:
 TextLoader 返回单个 Document（一个文件 = 一个 Document）。
 
 参考文档：
-  - TextLoader: https://reference.langchain.com/python/langchain-community/document_loaders/text/TextLoader
+  - TextLoader: langchain_community.document_loaders.TextLoader
 
 安装：
   pip install langchain-community

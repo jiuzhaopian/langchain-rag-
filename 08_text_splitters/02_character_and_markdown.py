@@ -5,8 +5,8 @@ CharacterTextSplitter: 按单个分隔符切分，简单直接。
 MarkdownHeaderTextSplitter: 按 Markdown 标题层级切分，保留标题作为 metadata。
 
 参考文档：
-  - CharacterTextSplitter: https://reference.langchain.com/python/langchain-text-splitters/text_splitters/character_text_splitter/CharacterTextSplitter
-  - MarkdownHeaderTextSplitter: https://reference.langchain.com/python/langchain-text-splitters/text_splitters/markdown/MarkdownHeaderTextSplitter
+  - CharacterTextSplitter: langchain_text_splitters.CharacterTextSplitter
+  - MarkdownHeaderTextSplitter: langchain_text_splitters.MarkdownHeaderTextSplitter
 
 安装：
   pip install langchain-text-splitters
