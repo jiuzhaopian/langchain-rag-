@@ -6,8 +6,8 @@
 - JSONLoader: 用 jq 表达式从 JSON 中提取字段作为 Document 内容
 
 参考文档：
-  - CSVLoader: langchain_community.document_loaders.CSVLoader
-  - JSONLoader: langchain_community.document_loaders.JSONLoader
+  - CSVLoader: https://docs.langchain.com/oss/python/integrations/document_loaders/csv
+  - JSONLoader: https://docs.langchain.com/oss/python/integrations/document_loaders/json
 
 安装：
   pip install langchain-community

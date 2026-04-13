@@ -8,7 +8,7 @@ DirectoryLoader 扫描目录，将匹配的文件批量加载为 Document 列表
        通常需要手动指定为 TextLoader。
 
 参考文档：
-  - DirectoryLoader: langchain_community.document_loaders.DirectoryLoader
+  - DirectoryLoader: https://reference.langchain.com/python/langchain-community/document_loaders/directory/DirectoryLoader
 
 安装：
   pip install langchain-community

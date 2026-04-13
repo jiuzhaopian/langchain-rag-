@@ -82,15 +82,15 @@ def demo_loader_cheatsheet():
 | WebBaseLoader     | langchain-community | bs4        | 网页（基于 BeautifulSoup）|
 | PythonLoader      | langchain-community | 无         | Python 源码文件 |
 
-官方包路径：
-  TextLoader:        langchain_community.document_loaders.TextLoader
-  DirectoryLoader:   langchain_community.document_loaders.DirectoryLoader
-  CSVLoader:         langchain_community.document_loaders.CSVLoader
-  JSONLoader:        langchain_community.document_loaders.JSONLoader
-  PyPDFLoader:       langchain_community.document_loaders.PyPDFLoader
-  UnstructuredLoader:langchain_unstructured.document_loaders.UnstructuredLoader
-  WebBaseLoader:     langchain_community.document_loaders.WebBaseLoader
-  PythonLoader:      langchain_community.document_loaders.PythonLoader
+官方文档：
+  TextLoader:         https://reference.langchain.com/python/langchain-community/document_loaders/text/TextLoader
+  DirectoryLoader:    https://reference.langchain.com/python/langchain-community/document_loaders/directory/DirectoryLoader
+  CSVLoader:          https://docs.langchain.com/oss/python/integrations/document_loaders/csv
+  JSONLoader:         https://docs.langchain.com/oss/python/integrations/document_loaders/json
+  PyPDFLoader:        https://docs.langchain.com/oss/python/integrations/document_loaders/pypdfloader
+  UnstructuredLoader: https://docs.langchain.com/oss/python/integrations/document_loaders/unstructured_file
+  WebBaseLoader:      https://docs.langchain.com/oss/python/integrations/document_loaders/web_base
+  PythonLoader:       https://docs.langchain.com/oss/python/integrations/document_loaders/python
 
 导入方式统一:
   from langchain_community.document_loaders import TextLoader, CSVLoader, ...
