@@ -15,10 +15,13 @@ import os
 
 from langchain_community.document_loaders import PyPDFLoader
 
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+
 
 def create_sample_pdf():
     """创建示例 PDF 文件（如果没有）"""
-    pdf_path = "sample.pdf"
+    os.makedirs(DATA_DIR, exist_ok=True)
+    pdf_path = os.path.join(DATA_DIR, "sample.pdf")
 
     if os.path.exists(pdf_path):
         return pdf_path
@@ -84,7 +87,6 @@ def demo_lazy_load(pdf_path):
 
 
 if __name__ == "__main__":
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     pdf_path = create_sample_pdf()
     if pdf_path and os.path.exists(pdf_path):
         demo_basic(pdf_path)

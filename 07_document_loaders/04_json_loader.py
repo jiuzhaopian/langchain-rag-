@@ -18,16 +18,18 @@ import os
 from langchain_community.document_loaders import JSONLoader  # noqa: 构造函数需要 jq 可选依赖
 
 
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+
+
 # ============================================================
 # 公共：创建示例数据文件
 # ============================================================
 
 def create_sample_json():
     """创建 JSON 示例文件"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+    os.makedirs(DATA_DIR, exist_ok=True)
 
-    # JSON 数组文件
-    json_path = os.path.join(script_dir, "sample.json")
+    json_path = os.path.join(DATA_DIR, "sample.json")
     if not os.path.exists(json_path):
         data = [
             {"name": "LangChain", "desc": "LLM 应用开发框架", "category": "AI"},
@@ -37,8 +39,7 @@ def create_sample_json():
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
-    # 嵌套 JSON 文件
-    nested_json_path = os.path.join(script_dir, "nested_sample.json")
+    nested_json_path = os.path.join(DATA_DIR, "nested_sample.json")
     if not os.path.exists(nested_json_path):
         data = {
             "frameworks": [
@@ -133,8 +134,6 @@ def demo_json_nested(nested_json_path):
 
 
 if __name__ == "__main__":
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
     json_path, nested_json_path = create_sample_json()
     demo_json_basic(json_path)
     demo_json_nested(nested_json_path)

@@ -19,7 +19,8 @@ import shutil
 
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 
-TEST_DIR = "docs"
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+TEST_DIR = os.path.join(DATA_DIR, "docs_test")
 
 
 # ============================================================
@@ -31,9 +32,9 @@ def create_test_files():
     os.makedirs(os.path.join(TEST_DIR, "sub"), exist_ok=True)
 
     files = {
-        "docs/intro.txt": "LangChain 简介\n这是一个介绍文件。",
-        "docs/tutorial.txt": "LangChain 教程\n这是教程文件，内容更多一些。",
-        "docs/sub/notes.txt": "学习笔记\n这是子目录中的笔记文件。",
+        os.path.join(TEST_DIR, "intro.txt"): "LangChain 简介\n这是一个介绍文件。",
+        os.path.join(TEST_DIR, "tutorial.txt"): "LangChain 教程\n这是教程文件，内容更多一些。",
+        os.path.join(TEST_DIR, "sub", "notes.txt"): "学习笔记\n这是子目录中的笔记文件。",
     }
     for path, content in files.items():
         with open(path, "w", encoding="utf-8") as f:
@@ -119,8 +120,6 @@ def demo_advanced():
 
 
 if __name__ == "__main__":
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
     create_test_files()
     demo_basic()
     demo_glob_patterns()

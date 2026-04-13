@@ -22,6 +22,8 @@ import os
 from langchain_community.document_loaders import TextLoader
 from langchain_core.documents import Document
 
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+
 
 # ============================================================
 # 公共：创建示例数据文件
@@ -29,14 +31,16 @@ from langchain_core.documents import Document
 
 def create_sample_files():
     """创建文本示例文件"""
-    sample_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sample.txt")
+    os.makedirs(DATA_DIR, exist_ok=True)
+
+    sample_path = os.path.join(DATA_DIR, "sample.txt")
     if not os.path.exists(sample_path):
         with open(sample_path, "w", encoding="utf-8") as f:
             f.write("LangChain 是一个用于构建 LLM 应用的框架。\n")
             f.write("它提供了多种工具和抽象，用于连接大语言模型与外部数据源。\n")
             f.write("核心概念包括：Models、Prompts、OutputParsers、Chains、Retrievers。\n")
 
-    gbk_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sample_gbk.txt")
+    gbk_path = os.path.join(DATA_DIR, "sample_gbk.txt")
     if not os.path.exists(gbk_path):
         with open(gbk_path, "w", encoding="gbk") as f:
             f.write("这是一个 GBK 编码的示例文件。\n")
@@ -55,7 +59,7 @@ def demo_load_single():
     """
     print("=== 演示 1：加载单个文本文件 ===")
 
-    loader = TextLoader("./sample.txt")
+    loader = TextLoader(os.path.join(DATA_DIR, "sample.txt"))
     docs = loader.load()
 
     print(f"加载了 {len(docs)} 个文档")
@@ -105,7 +109,7 @@ def demo_lazy_load():
     """
     print("\n=== 演示 3：懒加载 lazy_load ===")
 
-    loader = TextLoader("./sample.txt")
+    loader = TextLoader(os.path.join(DATA_DIR, "sample.txt"))
 
     # lazy_load 返回 Iterator[Document]
     for i, doc in enumerate(loader.lazy_load()):
@@ -126,11 +130,11 @@ def demo_encoding():
     print("\n=== 演示 4：编码处理 ===")
 
     # 指定编码
-    loader_gbk = TextLoader("./sample_gbk.txt", encoding="gbk")
-    print("GBK 编码加载: TextLoader('./sample_gbk.txt', encoding='gbk')")
+    loader_gbk = TextLoader(os.path.join(DATA_DIR, "sample_gbk.txt"), encoding="gbk")
+    print(f"GBK 编码加载: {loader_gbk.load()[0].page_content[:30]}...")
 
     # 自动检测编码（需要 chardet 或 cchardet）
-    # loader_auto = TextLoader("./sample.txt", autodetect_encoding=True)
+    # loader_auto = TextLoader(os.path.join(DATA_DIR, "sample.txt"), autodetect_encoding=True)
 
     print("编码参数:")
     print("  encoding=None(默认, 尝试 utf-8) / 'gbk' / 'gb2312' / 'utf-16'")
@@ -138,8 +142,6 @@ def demo_encoding():
 
 
 if __name__ == "__main__":
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
     create_sample_files()
     demo_load_single()
     demo_document()

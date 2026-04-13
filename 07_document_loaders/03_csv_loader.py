@@ -15,6 +15,8 @@ import os
 
 from langchain_community.document_loaders import CSVLoader
 
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+
 
 # ============================================================
 # 公共：创建示例数据文件
@@ -22,7 +24,8 @@ from langchain_community.document_loaders import CSVLoader
 
 def create_sample_csv():
     """创建 CSV 示例文件"""
-    csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sample.csv")
+    os.makedirs(DATA_DIR, exist_ok=True)
+    csv_path = os.path.join(DATA_DIR, "sample.csv")
     if not os.path.exists(csv_path):
         with open(csv_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
@@ -100,7 +103,7 @@ def demo_csv_no_header(csv_path):
     print("\n=== 演示 3：无表头 CSV ===")
 
     # 先创建一个无表头的 CSV 文件
-    no_header_path = os.path.join(os.path.dirname(csv_path), "sample_no_header.csv")
+    no_header_path = os.path.join(DATA_DIR, "sample_no_header.csv")
     with open(no_header_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["LangChain", "LLM 应用开发框架", "AI"])
@@ -125,8 +128,6 @@ def demo_csv_no_header(csv_path):
 
 
 if __name__ == "__main__":
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
     csv_path = create_sample_csv()
     demo_csv_basic(csv_path)
     demo_csv_advanced(csv_path)
