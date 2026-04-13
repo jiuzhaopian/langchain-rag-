@@ -24,6 +24,28 @@ from langchain_core.documents import Document
 
 
 # ============================================================
+# 公共：创建示例数据文件
+# ============================================================
+
+def create_sample_files():
+    """创建文本示例文件"""
+    sample_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sample.txt")
+    if not os.path.exists(sample_path):
+        with open(sample_path, "w", encoding="utf-8") as f:
+            f.write("LangChain 是一个用于构建 LLM 应用的框架。\n")
+            f.write("它提供了多种工具和抽象，用于连接大语言模型与外部数据源。\n")
+            f.write("核心概念包括：Models、Prompts、OutputParsers、Chains、Retrievers。\n")
+
+    gbk_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sample_gbk.txt")
+    if not os.path.exists(gbk_path):
+        with open(gbk_path, "w", encoding="gbk") as f:
+            f.write("这是一个 GBK 编码的示例文件。\n")
+            f.write("用于演示 TextLoader 的编码处理能力。\n")
+
+    return sample_path, gbk_path
+
+
+# ============================================================
 # 演示 1：加载单个文本文件
 # ============================================================
 
@@ -118,13 +140,7 @@ def demo_encoding():
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-    sample_path = "sample.txt"
-    if not os.path.exists(sample_path):
-        with open(sample_path, "w", encoding="utf-8") as f:
-            f.write("LangChain 是一个用于构建 LLM 应用的框架。\n")
-            f.write("它提供了多种工具和抽象，用于连接大语言模型与外部数据源。\n")
-            f.write("核心概念包括：Models、Prompts、OutputParsers、Chains、Retrievers。\n")
-
+    create_sample_files()
     demo_load_single()
     demo_document()
     demo_lazy_load()
