@@ -14,13 +14,13 @@ JSONLoader 用 jq 表达式从 JSON 文件中提取内容，生成 Document 列�
 
 jq 常用语法速查（配合 JSONLoader 的 jq_schema 参数）：
   基础选择：
-    .          当前对象
-    .key       取字段值
-    .[index]   取数组元素（从 0 开始）
-    .[]        遍历数组所有元素
+    .          当前对象（整个输入）
+    .key       取对象的字段值（如 .name 取 name 字段）
+    .[index]   取数组元素（从 0 开始，如 .[0] 取第一个）
+    .[]        遍历数组所有元素，逐个输出
   管道组合：
     .[] | .key      遍历数组，取每个元素的 key 字段
-    .[] | .a + .b   遍历数组，拼接两个字段
+    .[] | .a + .b   遍历数组，字符串拼接两个字段（无分隔符）
   过滤筛选：
     .[] | select(.status == "active")   只保留 status 为 active 的元素
     .[] | select(.age > 18)              只保留 age 大于 18 的元素
