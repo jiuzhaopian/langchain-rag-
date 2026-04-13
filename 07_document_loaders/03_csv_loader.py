@@ -43,7 +43,7 @@ def create_sample_csv():
 def demo_csv_basic(csv_path):
     """
     CSVLoader 将 CSV 每行加载为一个 Document。
-    page_content = 该行所有列拼接（默认用冒号分隔）。
+    page_content 格式：每列一行，"列名: 值"，多列用换行符拼接。
     """
     print("=== 演示 1：CSVLoader 基本用法 ===")
 
