@@ -1,5 +1,5 @@
 """
-05_loader_summary.py - Document Loaders 总结 + Document 数据流
+06_loader_summary.py - Document Loaders 总结 + Document 数据流
 
 Document 是 LangChain 的核心数据结构，贯穿整个数据处理流程：
   Document Loaders → Text Splitters → VectorStore → Retriever → Chain

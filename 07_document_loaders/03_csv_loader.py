@@ -1,0 +1,133 @@
+"""
+03_csv_loader.py - CSV 加载器
+
+CSVLoader 将 CSV 文件每行加载为一个 Document，page_content 为该行所有列拼接。
+
+参考文档：
+  - CSVLoader: https://docs.langchain.com/oss/python/integrations/document_loaders/csv
+
+安装：
+  pip install langchain-community
+"""
+
+import csv
+import os
+
+from langchain_community.document_loaders import CSVLoader
+
+
+# ============================================================
+# 公共：创建示例数据文件
+# ============================================================
+
+def create_sample_csv():
+    """创建 CSV 示例文件"""
+    csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sample.csv")
+    if not os.path.exists(csv_path):
+        with open(csv_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["name", "description", "category"])
+            writer.writerow(["LangChain", "LLM 应用开发框架", "AI"])
+            writer.writerow(["LlamaIndex", "数据索引框架", "AI"])
+            writer.writerow(["FastAPI", "Python Web 框架", "Web"])
+    return csv_path
+
+
+# ============================================================
+# 演示 1：CSVLoader 基本用法
+# ============================================================
+
+def demo_csv_basic(csv_path):
+    """
+    CSVLoader 将 CSV 每行加载为一个 Document。
+    page_content = 该行所有列拼接（默认用冒号分隔）。
+    """
+    print("=== 演示 1：CSVLoader 基本用法 ===")
+
+    loader = CSVLoader(csv_path)
+    docs = loader.load()
+
+    print(f"加载了 {len(docs)} 个文档（CSV 文件有 3 行数据 + 1 行表头）")
+    for doc in docs:
+        print(f"  【metadata】row {doc.metadata.get('row', '?')}; source: {doc.metadata.get('source', 'x')}")
+        print(f"  【内容】:\n {doc.page_content}")
+
+    print(f"\n元数据字段: {list(docs[0].metadata.keys())}")
+
+
+# ============================================================
+# 演示 2：CSVLoader 高级用法
+# ============================================================
+
+def demo_csv_advanced(csv_path):
+    """
+    CSVLoader 支持指定列、自定义分隔符等高级参数。
+    """
+    print("\n=== 演示 2：CSVLoader 高级用法 ===")
+
+    # source_column: 将某一列的值作为 metadata.source（默认是文件路径）
+    loader = CSVLoader(csv_path, source_column="name")
+    docs = loader.load()
+    for doc in docs:
+        print(f"  【metadata】row {doc.metadata.get('row', '?')}; source: {doc.metadata.get('source', 'x')}")
+        print(f"  【内容】:\n {doc.page_content}")
+
+    # csv_args: 传入 Python csv 模块的参数，控制 CSV 解析行为
+    # 常用参数：
+    #   delimiter  - 字段分隔符，默认逗号 ","。改为 "\t" 可解析 TSV 文件
+    #   quotechar  - 引号字符，默认双引号 '"'。用于包裹含分隔符的字段
+    #   fieldnames - 字段名列表。如果 CSV 文件没有表头行，必须手动指定
+    #   skipinitialspace - 是否跳过分隔符后的空格，默认 False
+    # 更多参数见: https://docs.python.org/3/library/csv.html
+    loader2 = CSVLoader(
+        csv_path,
+        csv_args={
+            "delimiter": ",",   # 字段分隔符
+            "quotechar": '"',   # 引号字符
+        },
+    )
+    print(f"\ncsv_args 自定义: 加载 {len(loader2.load())} 个文档")
+
+
+# ============================================================
+# 演示 3：无表头 CSV
+# ============================================================
+
+def demo_csv_no_header(csv_path):
+    """
+    CSV 文件没有表头时，需要通过 csv_args 指定 fieldnames。
+    """
+    print("\n=== 演示 3：无表头 CSV ===")
+
+    # 先创建一个无表头的 CSV 文件
+    no_header_path = os.path.join(os.path.dirname(csv_path), "sample_no_header.csv")
+    with open(no_header_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["LangChain", "LLM 应用开发框架", "AI"])
+        writer.writerow(["FastAPI", "Python Web 框架", "Web"])
+
+    # 不指定 fieldnames，第一行数据会被当作表头丢失
+    loader_no_names = CSVLoader(no_header_path)
+    docs_no_names = loader_no_names.load()
+    print(f"不指定 fieldnames: {len(docs_no_names)} 个文档")
+    for doc in docs_no_names:
+        print(f"  {doc.page_content}")
+
+    # 指定 fieldnames，所有行都会被加载为 Document
+    loader_with_names = CSVLoader(
+        no_header_path,
+        csv_args={"fieldnames": ["name", "description", "category"]},
+    )
+    docs_with_names = loader_with_names.load()
+    print(f"\n指定 fieldnames: {len(docs_with_names)} 个文档")
+    for doc in docs_with_names:
+        print(f"  {doc.page_content}")
+
+
+if __name__ == "__main__":
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+    csv_path = create_sample_csv()
+    demo_csv_basic(csv_path)
+    demo_csv_advanced(csv_path)
+    demo_csv_no_header(csv_path)

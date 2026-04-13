@@ -1,5 +1,5 @@
 """
-04_pdf_loader.py - PDF 加载器
+05_pdf_loader.py - PDF 加载器
 
 PyPDFLoader 将 PDF 文件每页加载为一个 Document。
 需要安装 pypdf 包（LangChain 社区版 PDF 加载的默认依赖）。
