@@ -97,8 +97,9 @@ def demo_lazy_load():
 
 def demo_encoding():
     """
-    TextLoader 默认用 'utf-8' 编码读取文件。
-    遇到 GBK/GB2312 等中文编码文件时，需要手动指定。
+    TextLoader 默认 encoding=None，会尝试 'utf-8' 解码，失败则抛 UnicodeDecodeError。
+    遇到 GBK/GB2312 等编码文件时，需要手动指定 encoding。
+    autodetect_encoding 默认 False，设为 True 可自动检测（需安装 chardet/cchardet）。
     """
     print("\n=== 演示 4：编码处理 ===")
 
@@ -109,7 +110,9 @@ def demo_encoding():
     # 自动检测编码（需要 chardet 或 cchardet）
     # loader_auto = TextLoader("./sample.txt", autodetect_encoding=True)
 
-    print("编码参数: encoding='utf-8'(默认) / 'gbk' / 'gb2312' / autodetect_encoding=True")
+    print("编码参数:")
+    print("  encoding=None(默认, 尝试 utf-8) / 'gbk' / 'gb2312' / 'utf-16'")
+    print("  autodetect_encoding=False(默认) / True(自动检测, 需 chardet)")
 
 
 if __name__ == "__main__":
