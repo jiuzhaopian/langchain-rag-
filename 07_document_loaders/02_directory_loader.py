@@ -1,14 +1,14 @@
 """
 02_directory_loader.py - DirectoryLoader 目录加载器
 
-DirectoryLoader 递归扫描目录，将匹配的文件批量加载为 Document 列表。
+DirectoryLoader 扫描目录，将匹配的文件批量加载为 Document 列表。
 本质是遍历文件 + 对每个文件调用指定的 Loader。
 
-重要：必须指定 loader_cls，否则默认使用 UnstructuredLoader（需要安装 unstructured 包）。
-常用: loader_cls=TextLoader, glob="**/*.txt"
+重要：loader_cls 默认是 UnstructuredFileLoader（需要安装 unstructured 包），
+       通常需要手动指定为 TextLoader。
 
 参考文档：
-  - DirectoryLoader: https://reference.langchain.com/python/langchain-community/document_loaders/fs/DirectoryLoader
+  - DirectoryLoader: https://reference.langchain.com/python/langchain-community/document_loaders/directory/DirectoryLoader
 
 安装：
   pip install langchain-community
@@ -19,20 +19,40 @@ import shutil
 
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 
+TEST_DIR = "docs"
+
 
 # ============================================================
-# 演示 1：基本用法 - 扫描目录
+# 公共：创建测试目录和文件
+# ============================================================
+
+def create_test_files():
+    """创建测试用的目录结构"""
+    os.makedirs(os.path.join(TEST_DIR, "sub"), exist_ok=True)
+
+    files = {
+        "docs/intro.txt": "LangChain 简介\n这是一个介绍文件。",
+        "docs/tutorial.txt": "LangChain 教程\n这是教程文件，内容更多一些。",
+        "docs/sub/notes.txt": "学习笔记\n这是子目录中的笔记文件。",
+    }
+    for path, content in files.items():
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content)
+
+
+# ============================================================
+# 演示 1：基本用法
 # ============================================================
 
 def demo_basic():
     """
-    扫描目录，加载所有 .txt 文件。
+    扫描目录，加载所有匹配的文件。
+    loader_cls 必须指定，否则默认 UnstructuredFileLoader（需安装 unstructured）。
     """
     print("=== 演示 1：基本用法 ===")
 
-    # 必须指定 loader_cls，否则默认用 UnstructuredLoader（需要额外安装）
     loader = DirectoryLoader(
-        "./docs",
+        TEST_DIR,
         glob="**/*.txt",
         loader_cls=TextLoader,
     )
@@ -40,7 +60,7 @@ def demo_basic():
 
     print(f"加载了 {len(docs)} 个文档:")
     for doc in docs:
-        print(f"  [{doc.metadata['source']}] {doc.page_content[:50]}...")
+        print(f"  [{doc.metadata['source']}] {doc.page_content[:50]}")
 
 
 # ============================================================
@@ -66,18 +86,19 @@ def demo_glob_patterns():
 
 
 # ============================================================
-# 演示 3：懒加载 + silent_errors
+# 演示 3：高级用法（silent_errors + 懒加载）
 # ============================================================
 
 def demo_advanced():
     """
-    silent_errors=True 跳过无法加载的文件（如编码错误），不中断整个流程。
+    silent_errors=True 跳过无法加载的文件，不中断整个流程。
+    lazy_load() 逐文件处理，适合大量文件场景。
     """
     print("\n=== 演示 3：高级用法 ===")
 
     # 静默跳过加载失败的文件
     loader = DirectoryLoader(
-        "./docs",
+        TEST_DIR,
         glob="**/*.txt",
         loader_cls=TextLoader,
         silent_errors=True,    # 跳过加载失败的文件
@@ -89,7 +110,7 @@ def demo_advanced():
     # 懒加载（逐文件处理，适合大量文件）
     print("\n懒加载模式:")
     loader_lazy = DirectoryLoader(
-        "./docs",
+        TEST_DIR,
         glob="**/*.txt",
         loader_cls=TextLoader,
     )
@@ -97,43 +118,13 @@ def demo_advanced():
         print(f"  [{i}] {os.path.basename(doc.metadata['source'])}: {len(doc.page_content)} 字符")
 
 
-# ============================================================
-# 演示 4：自定义 Loader
-# ============================================================
-
-def demo_custom_loader():
-    """
-    DirectoryLoader 的 loader_cls 可以是任何 LangChain Loader。
-    例如：CSVLoader、UnstructuredHTMLLoader、PyPDFLoader 等。
-    """
-    print("\n=== 演示 4：自定义 Loader ===")
-
-    print("常用组合:")
-    print("  loader_cls=TextLoader        -> 纯文本文件")
-    print("  loader_cls=CSVLoader         -> CSV 文件")
-    print("  loader_cls=PyPDFLoader       -> PDF 文件")
-    print("  loader_cls=UnstructuredHTMLLoader -> HTML 文件")
-    print("  loader_cls=PythonLoader      -> Python 源码文件")
-
-
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-    docs_dir = "docs"
-    os.makedirs(os.path.join(docs_dir, "sub"), exist_ok=True)
-
-    files = {
-        "docs/intro.txt": "LangChain 简介\n这是一个介绍文件。",
-        "docs/tutorial.txt": "LangChain 教程\n这是教程文件，内容更多一些。",
-        "docs/sub/notes.txt": "学习笔记\n这是子目录中的笔记文件。",
-    }
-    for path, content in files.items():
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(content)
-
+    create_test_files()
     demo_basic()
     demo_glob_patterns()
     demo_advanced()
-    demo_custom_loader()
 
-    shutil.rmtree(docs_dir, ignore_errors=True)
+    # 清理测试目录
+    shutil.rmtree(TEST_DIR, ignore_errors=True)
