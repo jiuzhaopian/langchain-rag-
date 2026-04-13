@@ -36,6 +36,18 @@ def create_sample_csv():
     return csv_path
 
 
+def create_no_header_csv():
+    """创建无表头 CSV 示例文件"""
+    os.makedirs(DATA_DIR, exist_ok=True)
+    no_header_path = os.path.join(DATA_DIR, "sample_no_header.csv")
+    if not os.path.exists(no_header_path):
+        with open(no_header_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["LangChain", "LLM 应用开发框架", "AI"])
+            writer.writerow(["FastAPI", "Python Web 框架", "Web"])
+    return no_header_path
+
+
 # ============================================================
 # 演示 1：CSVLoader 基本用法
 # ============================================================
@@ -69,6 +81,9 @@ def demo_csv_advanced(csv_path):
     print("\n=== 演示 2：CSVLoader 高级用法 ===")
 
     # source_column: 将某一列的值作为 metadata.source（默认是文件路径）
+    # metadata_columns:指定哪些列从 page_content 中移除，改放到 metadata 里
+    # content_columns: 指定只有这些列进 page_content，其余列全部丢弃（既不进 content 也不进 metadata）
+
     loader = CSVLoader(csv_path, source_column="name")
     docs = loader.load()
     for doc in docs:
@@ -96,18 +111,11 @@ def demo_csv_advanced(csv_path):
 # 演示 3：无表头 CSV
 # ============================================================
 
-def demo_csv_no_header(csv_path):
+def demo_csv_no_header(no_header_path):
     """
     CSV 文件没有表头时，需要通过 csv_args 指定 fieldnames。
     """
     print("\n=== 演示 3：无表头 CSV ===")
-
-    # 先创建一个无表头的 CSV 文件
-    no_header_path = os.path.join(DATA_DIR, "sample_no_header.csv")
-    with open(no_header_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow(["LangChain", "LLM 应用开发框架", "AI"])
-        writer.writerow(["FastAPI", "Python Web 框架", "Web"])
 
     # 不指定 fieldnames，第一行数据会被当作表头丢失
     loader_no_names = CSVLoader(no_header_path)
@@ -129,6 +137,7 @@ def demo_csv_no_header(csv_path):
 
 if __name__ == "__main__":
     csv_path = create_sample_csv()
+    no_header_path = create_no_header_csv()
     demo_csv_basic(csv_path)
     demo_csv_advanced(csv_path)
-    demo_csv_no_header(csv_path)
+    demo_csv_no_header(no_header_path)

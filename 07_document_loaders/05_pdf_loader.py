@@ -91,3 +91,6 @@ if __name__ == "__main__":
     if pdf_path and os.path.exists(pdf_path):
         demo_basic(pdf_path)
         demo_lazy_load(pdf_path)
+
+    ## 读取自己的pdf文件
+    demo_basic(pdf_path = os.path.join(DATA_DIR, "请假制度.pdf"))
