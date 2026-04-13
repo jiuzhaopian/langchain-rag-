@@ -6,6 +6,7 @@ JSONLoader 用 jq 表达式从 JSON 文件中提取内容，生成 Document 列�
 
 参考文档：
   - JSONLoader: https://docs.langchain.com/oss/python/integrations/document_loaders/json
+  - jq 语法教程: https://jqlang.github.io/jq/manual/
 
 安装：
   pip install langchain-community jq
@@ -63,8 +64,9 @@ def demo_json_basic(json_path):
     jq_schema 定义提取规则，每个匹配结果生成一个 Document。
 
     text_content 参数：
-      - False（默认）: 提取到的对象转为 JSON 字符串存入 page_content
-      - True: 直接使用字符串值（不包 JSON），适合提取单个字段
+      - False（默认）: 提取到的对象用 json.dumps() 序列化为 JSON 字符串存入 page_content。
+        注意：json.dumps() 默认 ensure_ascii=True，中文会被转义为 \\uXXXX（如 \\u5e94\\u7528）。
+      - True: 直接使用字符串值（不包 JSON），适合提取单个字段，不会出现中文转义。
     """
     print("=== 演示 1：JSONLoader 基本用法 ===")
 
@@ -79,8 +81,21 @@ def demo_json_basic(json_path):
         print("跳过: 需要安装 jq（pip install jq）")
         return
     docs = loader.load()
-    print(f"jq='.[]'（遍历数组）: {len(docs)} 个文档")
+    print(f"jq='.[]'（遍历数组，text_content=False）: {len(docs)} 个文档")
+    print(f"  注意：中文被 json.dumps 转义为 \\\\uXXXX")
     for doc in docs:
+        print(f"  {doc.page_content[:80]}")
+
+    # text_content=True 提取整个对象（避免中文转义）
+    # 通过 jq 的 tostring 内置函数将对象转为字符串，此时中文正常显示
+    loader0 = JSONLoader(
+        json_path,
+        jq_schema='.[] | tostring',
+        text_content=True,
+    )
+    docs0 = loader0.load()
+    print(f"\njq='.[] | tostring'（遍历数组，text_content=True）: {len(docs0)} 个文档")
+    for doc in docs0:
         print(f"  {doc.page_content[:80]}")
 
     # 只提取 name 字段
