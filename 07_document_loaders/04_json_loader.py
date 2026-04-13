@@ -64,9 +64,9 @@ def demo_json_basic(json_path):
     jq_schema 定义提取规则，每个匹配结果生成一个 Document。
 
     text_content 参数：
-      - False（默认）: 提取到的对象用 json.dumps() 序列化为 JSON 字符串存入 page_content。
-        注意：json.dumps() 默认 ensure_ascii=True，中文会被转义为 \\uXXXX（如 \\u5e94\\u7528）。
-      - True: 直接使用字符串值（不包 JSON），适合提取单个字段，不会出现中文转义。
+      - False（默认）: jq 输出再经 json.dumps() 序列化后存入 page_content。
+        json.dumps() 默认 ensure_ascii=True，中文被转义为 \\uXXXX。
+      - True: jq 输出直接作为 page_content，不再经过 json.dumps()，中文保持原样。
     """
     print("=== 演示 1：JSONLoader 基本用法 ===")
 
