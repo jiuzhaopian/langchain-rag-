@@ -109,10 +109,6 @@ def demo_bm25_retriever():
         print("⚠️  BM25Retriever 在当前环境中不可用，需要安装 rank_bm25")
         return
 
-    # BM25 基于词频统计，不需要 Embedding
-    # 适合关键词明确的场景，如技术文档搜索
-    retriever = BM25Retriever.from_documents(SAMPLE_DOCUMENTS, k=3)
-
     query = "向量数据库"
     results = retriever.invoke(query)
     print(f"查询: '{query}'，返回 {len(results)} 条结果:")
