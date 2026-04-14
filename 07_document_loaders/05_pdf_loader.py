@@ -94,12 +94,17 @@ def demo_layout_mode():
 def _patch_pypdf_extract_images():
     """
     修复 langchain-community PyPDFParser.extract_images_from_page 的 bug：
-    在写入图片数据之前检查 BytesIO 是否为空（永远为 True），导致所有图片被跳过。
-    参考: https://github.com/langchain-ai/langchain/issues/34400
 
-    此函数替换有 bug 的方法，去掉无效的空缓冲区检查。
+    源码中在 io.BytesIO() 刚创建后立即检查 nbytes == 0（永远为 True），
+    导致所有图片数据被跳过，extract_images 功能完全失效。
+
+    修复方式：替换整个方法，去掉无效的空缓冲区检查。
+
+    参考: https://github.com/langchain-ai/langchain/issues/34400
+    等官方修复后可移除此 patch。
     """
     import io
+
     import numpy as np
     import pypdf
     from PIL import Image
@@ -108,9 +113,9 @@ def _patch_pypdf_extract_images():
         PyPDFParser,
         _FORMAT_IMAGE_STR,
         _JOIN_IMAGES,
-        _format_inner_image,
         _PDF_FILTER_WITHOUT_LOSS,
         _PDF_FILTER_WITH_LOSS,
+        _format_inner_image,
     )
     from langchain_core.documents.base import Blob
 
@@ -142,6 +147,8 @@ def _patch_pypdf_extract_images():
                     )
                 if np_image is not None:
                     image_bytes = io.BytesIO()
+                    # 修复: 删掉了原代码中 "if image_bytes.getbuffer().nbytes == 0: continue"
+                    # 新建的 BytesIO 永远为空，导致所有图片被跳过
                     Image.fromarray(np_image).save(image_bytes, format="PNG")
                     blob = Blob.from_data(
                         image_bytes.getvalue(), mime_type="image/png"
@@ -164,21 +171,21 @@ def _patch_pypdf_extract_images():
 def demo_extract_images(pdf_path):
     """
     PyPDFLoader 的 extract_images=True 会提取 PDF 中嵌入的图片，
-    并通过 images_parser 对图片做 OCR 识别。
+    并通过 images_parser 对图片做文字识别。
 
-    默认使用 RapidOCRBlobParser（无需额外配置），
-    也可用 LLMImageBlobParser（调用多模态大模型识别）。
+    两种 parser 可选：
+      - RapidOCRBlobParser: 本地 OCR，无需 API Key，速度快
+      - LLMImageBlobParser: 调用多模态大模型识别，效果更好，需要 API Key
 
     images_inner_format 控制图片区域的输出格式：
-      - "text"（默认）: 仅输出 OCR 识别的文字
-      - "markdown-img": Markdown 图片标签 + OCR 文字
-      - "html-img": HTML <img> 标签 + OCR 文字
+      - "text"（默认）: 仅输出识别文字
+      - "markdown-img": Markdown 图片标签 + 识别文字
+      - "html-img": HTML <img> 标签 + 识别文字
 
     ⚠️ 已知 bug: langchain-community 的 PyPDFParser 在写入图片数据之前
        错误地检查 BytesIO 是否为空（永远为 True），导致所有图片被跳过。
-       本 demo 通过 monkey-patch 修复此问题。
+       本 demo 通过 _patch_pypdf_extract_images() 修复此问题。
        参考: https://github.com/langchain-ai/langchain/issues/34400
-       等官方修复后可移除 _patch_pypdf_extract_images() 调用。
 
     依赖: pip install pypdf rapidocr-onnxruntime
     """
@@ -193,50 +200,59 @@ def demo_extract_images(pdf_path):
     # 修复已知 bug
     _patch_pypdf_extract_images()
 
-    # --- 4a: 默认 RapidOCRBlobParser ---
-    print("\n--- 4a: PyPDFLoader(extract_images=True) + RapidOCRBlobParser ---")
-    loader = PyPDFLoader(pdf_path, extract_images=True)
+    # --- 4a: RapidOCRBlobParser（本地 OCR）---
+    print("\n--- 4a: PyPDFLoader + RapidOCRBlobParser（本地 OCR）---")
+    loader = PyPDFLoader(
+        pdf_path,
+        extract_images=True,
+        images_parser=RapidOCRBlobParser(),
+    )
     docs = loader.load()
     for d in docs:
         print(f"Page {d.metadata.get('page')}:")
         print(d.page_content)
 
-    # --- 4b: images_inner_format 对比 ---
-    print("\n--- 4b: images_inner_format 三种格式 ---")
-    for fmt in ["text", "markdown-img", "html-img"]:
+    # --- 4b: LLMImageBlobParser（智谱 glm-5 多模态）---
+    print("\n--- 4b: PyPDFLoader + LLMImageBlobParser（智谱 glm-5）---")
+    try:
+        from langchain_community.document_loaders.parsers import LLMImageBlobParser
+        from langchain_community.chat_models import ChatZhipuAI
+
+        api_key = os.getenv("ZHIPUAI_API_KEY")
+        if not api_key:
+            print("跳过: 未设置 ZHIPUAI_API_KEY 环境变量")
+            print("\n用法示例（智谱 glm-5 多模态模型）:")
+            print("""  from langchain_community.document_loaders.parsers import LLMImageBlobParser
+  from langchain_community.chat_models import ChatZhipuAI
+
+  llm = ChatZhipuAI(model="glm-5", api_key="your_key")
+  loader = PyPDFLoader(
+      "invoice.pdf",
+      extract_images=True,
+      images_parser=LLMImageBlobParser(model=llm),
+  )
+  docs = loader.load()
+  for doc in docs:
+      print(doc.page_content)""")
+            return
+
+        llm = ChatZhipuAI(model="glm-5", api_key=api_key)
         loader = PyPDFLoader(
             pdf_path,
             extract_images=True,
-            images_inner_format=fmt,
+            images_parser=LLMImageBlobParser(model=llm),
         )
         docs = loader.load()
-        content = docs[0].page_content
-        if fmt == "text":
-            print(f"  [{fmt}]:")
-            for line in content.strip().split("\n"):
-                print(f"    {line}")
-        else:
-            # 只展示格式标签部分
-            tag_line = [l for l in content.split("\n") if "!" in l or "<img" in l]
-            print(f"  [{fmt}]: {tag_line[0][:80]}... + OCR文字")
+        for d in docs:
+            print(f"Page {d.metadata.get('page')}:")
+            print(d.page_content)
 
-    # --- 4c: LLMImageBlobParser（示例，需 API Key） ---
-    print("\n--- 4c: LLMImageBlobParser（需 API Key，仅展示用法）---")
-    print("  from langchain_community.document_loaders.parsers import LLMImageBlobParser")
-    print("  from langchain_openai import ChatOpenAI")
-    print("  loader = PyPDFLoader(")
-    print("      'invoice.pdf',")
-    print("      extract_images=True,")
-    print("      images_parser=LLMImageBlobParser(")
-    print("          model=ChatOpenAI(model='gpt-4o-mini', max_tokens=1024)")
-    print("      ),")
-    print("  )")
+    except ImportError:
+        print("跳过: 需要 pip install langchain-community langchain-core")
 
 
 if __name__ == "__main__":
-    pdf_path = os.path.join(DATA_DIR, "报销制度.pdf")
-    if os.path.exists(pdf_path):
-        demo_basic(pdf_path)
-        demo_lazy_load(pdf_path)
+    demo_basic(os.path.join(DATA_DIR, "sample.pdf"))
+    demo_lazy_load(os.path.join(DATA_DIR, "sample.pdf"))
     demo_layout_mode()
     demo_extract_images(os.path.join(DATA_DIR, "test_invoice.pdf"))
