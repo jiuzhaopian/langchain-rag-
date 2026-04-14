@@ -1,5 +1,5 @@
 """
-03_splitter_summary.py - Text Splitters 总结 + 选择指南
+05_splitter_summary.py - Text Splitters 总结 + 选择指南
 
 汇总所有 Text Splitter 的知识，包括选型建议和参数调优。
 """
@@ -17,15 +17,16 @@ def demo_cheatsheet():
     """
     print("=== Text Splitter 选型速查 ===")
     print("""
-| Splitter                        | 切分依据      | 返回类型      | 推荐场景          |
-|---------------------------------|-------------|--------------|------------------|
-| RecursiveCharacterTextSplitter  | 字符数+多分隔符| str / Document | **通用首选**       |
-| CharacterTextSplitter           | 单个分隔符    | str / Document | 结构清晰的文本     |
-| MarkdownHeaderTextSplitter      | Markdown 标题 | Document      | 技术文档/Wiki      |
-| MarkdownTextSplitter            | Markdown 结构+字符数 | str     | 需要控制大小的 Markdown |
-| TokenTextSplitter               | Token 数     | str / Document | 需要精确控制 token  |
-| PythonCodeTextSplitter          | Python 语法   | str / Document | Python 源码        |
-| HTMLSectionSplitter             | HTML 标签    | Document      | HTML 网页          |
+| Splitter                        | 切分依据           | 返回类型       | 推荐场景              |
+|---------------------------------|-------------------|---------------|----------------------|
+| RecursiveCharacterTextSplitter  | 字符数 + 多分隔符递归 | str / Document | **通用首选**            |
+| CharacterTextSplitter           | 单个分隔符          | str / Document | 结构清晰的文本（JSON/日志） |
+| MarkdownHeaderTextSplitter      | Markdown 标题层级   | Document      | 技术文档/Wiki（按章节检索）  |
+| MarkdownTextSplitter            | Markdown 结构+字符数 | str           | 需要控制大小的 Markdown    |
+| HTMLSectionSplitter             | HTML 标题标签       | Document      | 网页内容/爬虫结果          |
+| LatexTextSplitter               | LaTeX 章节/环境     | str           | 学术论文/技术报告          |
+| TokenTextSplitter               | Token 数           | str / Document | 精确控制 token           |
+| PythonCodeTextSplitter          | Python 语法        | str / Document | Python 源码             |
 
 导入:
   from langchain_text_splitters import RecursiveCharacterTextSplitter, ...
@@ -87,6 +88,7 @@ chunk_overlap（重叠大小）:
   - 长文档分析: chunk_size=1000, overlap=100
   - 代码文档: 用 PythonCodeTextSplitter（按语法切）
   - Markdown 文档: 用 MarkdownHeaderTextSplitter（按标题切）
+  - HTML 文档: 用 HTMLSectionSplitter（按标签切）
 
 验证方法:
   切分后随机抽查几个块，确认语义是否完整、是否有明显的语义断裂。

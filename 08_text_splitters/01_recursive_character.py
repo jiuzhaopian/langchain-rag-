@@ -5,12 +5,18 @@ RecursiveCharacterTextSplitter 是 LangChain 最常用的文本切分器。
 它按字符数切分，递归尝试多种分隔符，优先在自然断点（段落 > 句子 > 单词）处切分。
 
 原理：
-  1. 先尝试用 "\\n\\n"（段落）切分
-  2. 如果块仍太大，用 "\\n"（换行）继续切
-  3. 还太大用 " "（空格）切
-  4. 最后逐字符切
+  1. 先尝试用 "\\n\\n"（段落）切分，得到多个小段
+  2. 将相邻小段**合并**，直到接近 chunk_size（不是切完就结束）
+  3. 如果合并后的块仍超过 chunk_size，用 "\\n"（换行）继续拆
+  4. 还太大用 " "（空格）切，最后逐字符切
 
-这样保证在语义自然的位置切分，而不是在句子中间硬切。
+核心：先切后合并，保证块尽量大但不超 chunk_size，同时在语义自然的位置切分。
+
+示例：SAMPLE_TEXT 有 6 个段落（\\n\\n 分隔），chunk_size=100 时：
+  - 段落 1+2 合并 ≈ 96 字符 < 100 → 成为一个 chunk
+  - 段落 3+4 合并 ≈ 95 字符 < 100 → 成为一个 chunk
+  - 段落 5+6 合并 ≈ 70 字符 < 100 → 成为一个 chunk
+  - 最终 3 个 chunk（不是 6 个）
 
 参考文档：
   - RecursiveCharacterTextSplitter: https://reference.langchain.com/python/langchain-text-splitters/text_splitters/recursive_character_text_splitter/RecursiveCharacterTextSplitter
@@ -81,7 +87,7 @@ def demo_create_documents():
     )
     print(f"生成 {len(docs)} 个 Document:")
     for i, doc in enumerate(docs):
-        print(f"  块 {i+1}: {doc.metadata} -> {doc.page_content[:40]}...")
+        print(f"  块 {i+1}: {doc.metadata} -> {doc.page_content[:20]}......")
 
 
 # ============================================================
@@ -109,8 +115,7 @@ def demo_split_documents():
     print(f"输入: {len(docs_in)} 个 Document")
     print(f"输出: {len(docs_out)} 个 Document（metadata 保留）:")
     for i, doc in enumerate(docs_out):
-        print(f"  块 {i+1}: page={doc.metadata['page']}, source={doc.metadata['source']}, "
-              f"长度={len(doc.page_content)}")
+        print(f"  块 {i+1}: metadata={doc.metadata} ->内容长度={len(doc.page_content)}")
 
 
 # ============================================================
@@ -132,13 +137,9 @@ def demo_parameters():
     for size, overlap, desc in configs:
         splitter = RecursiveCharacterTextSplitter(chunk_size=size, chunk_overlap=overlap)
         chunks = splitter.split_text(SAMPLE_TEXT)
-        print(f"\n{desc}: chunk_size={size}, overlap={overlap}")
-        print(f"  -> {len(chunks)} 个块", end="")
-        if chunks:
-            print(f", 块大小范围: {min(len(c) for c in chunks)}-{max(len(c) for c in chunks)} 字符")
-        else:
-            print()
-
+        print(f"\n{desc}: chunk_size={size}, overlap={overlap}-> {len(chunks)} 个块 \n")
+        for i,chunk in enumerate(chunks):
+            print(f"->块{i+1};大小:{len(chunk)};块内容：{chunk[:20]}....")
 
 # ============================================================
 # 演示 5：自定义分隔符
@@ -163,8 +164,8 @@ def demo_separators():
     chunks = splitter_cn.split_text(SAMPLE_TEXT)
     print(f"\n中文分隔符 ['\\n\\n', '。', '\\n', '，', ' ', '']:")
     print(f"  -> {len(chunks)} 个块")
-    for i, chunk in enumerate(chunks[:3]):
-        print(f"  块 {i+1}: {chunk[:50]}...")
+    for i, chunk in enumerate(chunks):
+        print(f"  块 {i+1};大小:{len(chunk)}: {chunk[:50]}...")
 
 
 # ============================================================
@@ -195,6 +196,8 @@ def demo_length_function():
     chunks = splitter.split_text(SAMPLE_TEXT)
     print(f"\n中文加权长度（中文=2, 英文=1）:")
     print(f"  -> {len(chunks)} 个块")
+    for i, chunk in enumerate(chunks):
+        print(f"  块 {i + 1};大小:{len(chunk)}: {chunk[:50]}...")
 
 
 if __name__ == "__main__":
