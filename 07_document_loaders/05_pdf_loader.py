@@ -11,9 +11,30 @@ PyPDFLoader 将 PDF 文件每页加载为一个 Document。
   pip install langchain-community pypdf
 """
 
+import io
 import os
 
+import numpy as np
+from PIL import Image
 from langchain_community.document_loaders import PyPDFLoader
+
+try:
+    import pypdf
+    from langchain_community.document_loaders.parsers.pdf import (
+        PyPDFParser,
+        _FORMAT_IMAGE_STR,
+        _JOIN_IMAGES,
+        _PDF_FILTER_WITHOUT_LOSS,
+        _PDF_FILTER_WITH_LOSS,
+        _format_inner_image,
+    )
+    from langchain_core.documents.base import Blob
+    from langchain_community.document_loaders.parsers import RapidOCRBlobParser
+    from langchain_community.document_loaders.parsers import LLMImageBlobParser
+    from langchain_community.chat_models import ChatZhipuAI
+    _IMAGE_OCR_AVAILABLE = True
+except ImportError:
+    _IMAGE_OCR_AVAILABLE = False
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
@@ -103,21 +124,9 @@ def _patch_pypdf_extract_images():
     参考: https://github.com/langchain-ai/langchain/issues/34400
     等官方修复后可移除此 patch。
     """
-    import io
-
-    import numpy as np
-    import pypdf
-    from PIL import Image
-
-    from langchain_community.document_loaders.parsers.pdf import (
-        PyPDFParser,
-        _FORMAT_IMAGE_STR,
-        _JOIN_IMAGES,
-        _PDF_FILTER_WITHOUT_LOSS,
-        _PDF_FILTER_WITH_LOSS,
-        _format_inner_image,
-    )
-    from langchain_core.documents.base import Blob
+    if not _IMAGE_OCR_AVAILABLE:
+        print("跳过: 需要 pip install pypdf pillow rapidocr-onnxruntime")
+        return
 
     def patched_extract(self, page):
         """修复版：去掉空缓冲区检查，正常写入数据后再创建 Blob。"""
@@ -191,10 +200,8 @@ def demo_extract_images(pdf_path):
     """
     print("\n=== 演示 4：PDF 图片提取 + OCR ===")
 
-    try:
-        from langchain_community.document_loaders.parsers import RapidOCRBlobParser
-    except ImportError:
-        print("跳过: 需要 pip install rapidocr-onnxruntime")
+    if not _IMAGE_OCR_AVAILABLE:
+        print("跳过: 需要 pip install pypdf pillow rapidocr-onnxruntime")
         return
 
     # 修复已知 bug
@@ -214,15 +221,12 @@ def demo_extract_images(pdf_path):
 
     # --- 4b: LLMImageBlobParser（智谱 glm-5 多模态）---
     print("\n--- 4b: PyPDFLoader + LLMImageBlobParser（智谱 glm-5）---")
-    try:
-        from langchain_community.document_loaders.parsers import LLMImageBlobParser
-        from langchain_community.chat_models import ChatZhipuAI
 
-        api_key = os.getenv("ZHIPUAI_API_KEY")
-        if not api_key:
-            print("跳过: 未设置 ZHIPUAI_API_KEY 环境变量")
-            print("\n用法示例（智谱 glm-5 多模态模型）:")
-            print("""  from langchain_community.document_loaders.parsers import LLMImageBlobParser
+    api_key = os.getenv("ZHIPUAI_API_KEY")
+    if not api_key:
+        print("跳过: 未设置 ZHIPUAI_API_KEY 环境变量")
+        print("\n用法示例（智谱 glm-5 多模态模型）:")
+        print("""  from langchain_community.document_loaders.parsers import LLMImageBlobParser
   from langchain_community.chat_models import ChatZhipuAI
 
   llm = ChatZhipuAI(model="glm-5", api_key="your_key")
@@ -234,21 +238,18 @@ def demo_extract_images(pdf_path):
   docs = loader.load()
   for doc in docs:
       print(doc.page_content)""")
-            return
+        return
 
-        llm = ChatZhipuAI(model="glm-5", api_key=api_key)
-        loader = PyPDFLoader(
-            pdf_path,
-            extract_images=True,
-            images_parser=LLMImageBlobParser(model=llm),
-        )
-        docs = loader.load()
-        for d in docs:
-            print(f"Page {d.metadata.get('page')}:")
-            print(d.page_content)
-
-    except ImportError:
-        print("跳过: 需要 pip install langchain-community langchain-core")
+    llm = ChatZhipuAI(model="glm-5", api_key=api_key)
+    loader = PyPDFLoader(
+        pdf_path,
+        extract_images=True,
+        images_parser=LLMImageBlobParser(model=llm),
+    )
+    docs = loader.load()
+    for d in docs:
+        print(f"Page {d.metadata.get('page')}:")
+        print(d.page_content)
 
 
 if __name__ == "__main__":
