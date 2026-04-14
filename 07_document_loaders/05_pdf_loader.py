@@ -18,37 +18,6 @@ from langchain_community.document_loaders import PyPDFLoader
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
-def create_sample_pdf():
-    """创建示例 PDF 文件（如果没有）"""
-    os.makedirs(DATA_DIR, exist_ok=True)
-    pdf_path = os.path.join(DATA_DIR, "sample.pdf")
-
-    if os.path.exists(pdf_path):
-        return pdf_path
-
-    # 用 fpdf2 生成示例 PDF
-    try:
-        from fpdf import FPDF
-    except ImportError:
-        print("需要 fpdf2 来生成示例 PDF: pip install fpdf2")
-        return None
-
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Helvetica", size=16)
-    pdf.cell(0, 10, "LangChain Study Guide", ln=True, align="C")
-    pdf.set_font("Helvetica", size=12)
-    pdf.multi_cell(0, 8, "Chapter 1: Introduction\nLangChain is a framework for building LLM applications.")
-    pdf.add_page()
-    pdf.set_font("Helvetica", size=12)
-    pdf.multi_cell(0, 8, "Chapter 2: Core Concepts\nModels, Prompts, Output Parsers, Chains, Retrievers.")
-    pdf.add_page()
-    pdf.set_font("Helvetica", size=12)
-    pdf.multi_cell(0, 8, "Chapter 3: RAG\nRetrieval Augmented Generation - the core pattern for AI knowledge.")
-    pdf.output(pdf_path)
-    return pdf_path
-
-
 # ============================================================
 # 演示 1：基本用法 - 每页一个 Document
 # ============================================================
@@ -119,138 +88,155 @@ def demo_layout_mode():
 
 
 # ============================================================
-# 演示 4：PDF 图片提取 + OCR
+# 演示 4：PDF 图片提取 + OCR（PyPDFLoader extract_images）
 # ============================================================
 
-def demo_extract_images():
+def _patch_pypdf_extract_images():
     """
-    从 PDF 中提取嵌入图片并通过 OCR 识别图片文字。
+    修复 langchain-community PyPDFParser.extract_images_from_page 的 bug：
+    在写入图片数据之前检查 BytesIO 是否为空（永远为 True），导致所有图片被跳过。
+    参考: https://github.com/langchain-ai/langchain/issues/34400
 
-    方案：PyMuPDF (fitz) 提取图片 + RapidOCR 识别 + 手动拼装 Document。
-    原因：PyPDFLoader 的 extract_images 在 pypdf 6.10.0 下存在图片数据丢失问题，
-    提取后的图片经 OCR 输出为空（验证详见 extract_images_research/README.md）。
+    此函数替换有 bug 的方法，去掉无效的空缓冲区检查。
+    """
+    import io
+    import numpy as np
+    import pypdf
+    from PIL import Image
 
-    images_inner_format 控制图片输出格式：
-      - "text"（默认）: 纯 OCR 文字
-      - "markdown-img": ![...] base64 图片 + OCR 文字
-      - "html-img": <img src=base64> + OCR 文字
+    from langchain_community.document_loaders.parsers.pdf import (
+        PyPDFParser,
+        _FORMAT_IMAGE_STR,
+        _JOIN_IMAGES,
+        _format_inner_image,
+        _PDF_FILTER_WITHOUT_LOSS,
+        _PDF_FILTER_WITH_LOSS,
+    )
+    from langchain_core.documents.base import Blob
 
-    依赖: pip install pymupdf rapidocr-onnxruntime reportlab Pillow
+    def patched_extract(self, page):
+        """修复版：去掉空缓冲区检查，正常写入数据后再创建 Blob。"""
+        if not self.images_parser:
+            return ""
+        if "/XObject" not in page["/Resources"].keys():
+            return ""
+        xObject = page["/Resources"]["/XObject"].get_object()
+        images = []
+        for obj in xObject:
+            if xObject[obj]["/Subtype"] == "/Image":
+                img_filter = (
+                    xObject[obj]["/Filter"][1:]
+                    if type(xObject[obj]["/Filter"]) is pypdf.generic._base.NameObject
+                    else xObject[obj]["/Filter"][0][1:]
+                )
+                np_image = None
+                if img_filter in _PDF_FILTER_WITHOUT_LOSS:
+                    height = int(xObject[obj]["/Height"])
+                    width = int(xObject[obj]["/Width"])
+                    np_image = np.frombuffer(
+                        xObject[obj].get_data(), dtype=np.uint8
+                    ).reshape(height, width, -1)
+                elif img_filter in _PDF_FILTER_WITH_LOSS:
+                    np_image = np.array(
+                        Image.open(io.BytesIO(xObject[obj].get_data()))
+                    )
+                if np_image is not None:
+                    image_bytes = io.BytesIO()
+                    Image.fromarray(np_image).save(image_bytes, format="PNG")
+                    blob = Blob.from_data(
+                        image_bytes.getvalue(), mime_type="image/png"
+                    )
+                    image_text = next(
+                        self.images_parser.lazy_parse(blob)
+                    ).page_content
+                    images.append(
+                        _format_inner_image(
+                            blob, image_text, self.images_inner_format
+                        )
+                    )
+        return _FORMAT_IMAGE_STR.format(
+            image_text=_JOIN_IMAGES.join(filter(None, images))
+        )
+
+    PyPDFParser.extract_images_from_page = patched_extract
+
+
+def demo_extract_images(pdf_path):
+    """
+    PyPDFLoader 的 extract_images=True 会提取 PDF 中嵌入的图片，
+    并通过 images_parser 对图片做 OCR 识别。
+
+    默认使用 RapidOCRBlobParser（无需额外配置），
+    也可用 LLMImageBlobParser（调用多模态大模型识别）。
+
+    images_inner_format 控制图片区域的输出格式：
+      - "text"（默认）: 仅输出 OCR 识别的文字
+      - "markdown-img": Markdown 图片标签 + OCR 文字
+      - "html-img": HTML <img> 标签 + OCR 文字
+
+    ⚠️ 已知 bug: langchain-community 的 PyPDFParser 在写入图片数据之前
+       错误地检查 BytesIO 是否为空（永远为 True），导致所有图片被跳过。
+       本 demo 通过 monkey-patch 修复此问题。
+       参考: https://github.com/langchain-ai/langchain/issues/34400
+       等官方修复后可移除 _patch_pypdf_extract_images() 调用。
+
+    依赖: pip install pypdf rapidocr-onnxruntime
     """
     print("\n=== 演示 4：PDF 图片提取 + OCR ===")
 
     try:
-        import fitz  # pymupdf
-    except ImportError:
-        print("跳过: 需要 pip install pymupdf")
-        return
-
-    try:
-        from rapidocr_onnxruntime import RapidOCR
+        from langchain_community.document_loaders.parsers import RapidOCRBlobParser
     except ImportError:
         print("跳过: 需要 pip install rapidocr-onnxruntime")
         return
 
-    # --- 4a: 提取 PDF 中的图片 ---
-    print("\n--- 4a: PyMuPDF 提取 PDF 图片 ---")
-    img_path = os.path.join(DATA_DIR, "test_invoice.png")
-    pdf_path = os.path.join(DATA_DIR, "test_invoice.pdf")
+    # 修复已知 bug
+    _patch_pypdf_extract_images()
 
-    if not os.path.exists(pdf_path):
-        # 创建含图片的测试 PDF
-        try:
-            from PIL import Image, ImageDraw
-            import reportlab.lib.pagesizes as ps
-            from reportlab.pdfgen import canvas
-        except ImportError:
-            print("跳过: 需要 reportlab + Pillow")
-            return
+    # --- 4a: 默认 RapidOCRBlobParser ---
+    print("\n--- 4a: PyPDFLoader(extract_images=True) + RapidOCRBlobParser ---")
+    loader = PyPDFLoader(pdf_path, extract_images=True)
+    docs = loader.load()
+    for d in docs:
+        print(f"Page {d.metadata.get('page')}:")
+        print(d.page_content)
 
-        os.makedirs(DATA_DIR, exist_ok=True)
-        # 生成发票图片
-        img = Image.new("RGB", (400, 200), color="white")
-        draw = ImageDraw.Draw(img)
-        draw.rectangle([0, 0, 399, 199], outline="black", width=2)
-        draw.text((30, 30), "Invoice #2024-001", fill="black")
-        draw.text((30, 80), "Total: 12800.00 RMB", fill="black")
-        draw.text((30, 130), "Date: 2024-03-15", fill="black")
-        img.save(img_path)
+    # --- 4b: images_inner_format 对比 ---
+    print("\n--- 4b: images_inner_format 三种格式 ---")
+    for fmt in ["text", "markdown-img", "html-img"]:
+        loader = PyPDFLoader(
+            pdf_path,
+            extract_images=True,
+            images_inner_format=fmt,
+        )
+        docs = loader.load()
+        content = docs[0].page_content
+        if fmt == "text":
+            print(f"  [{fmt}]:")
+            for line in content.strip().split("\n"):
+                print(f"    {line}")
+        else:
+            # 只展示格式标签部分
+            tag_line = [l for l in content.split("\n") if "!" in l or "<img" in l]
+            print(f"  [{fmt}]: {tag_line[0][:80]}... + OCR文字")
 
-        c = canvas.Canvas(pdf_path, pagesize=ps.A4)
-        c.setFont("Helvetica", 14)
-        c.drawString(100, 700, "This PDF contains an embedded invoice image:")
-        c.drawImage(img_path, 100, 400, width=400, height=200)
-        c.showPage()
-        c.save()
-        print(f"已生成测试 PDF: {pdf_path}")
-
-    # 提取图片
-    pdf_doc = fitz.open(pdf_path)
-    page = pdf_doc[0]
-    images = page.get_images(full=True)
-    print(f"共找到 {len(images)} 个嵌入图片")
-
-    for idx, img_info in enumerate(images):
-        xref = img_info[0]
-        bi = pdf_doc.extract_image(xref)
-        print(f"  [{idx}] 格式={bi['ext']}, 大小={len(bi['image'])}字节")
-
-    pdf_doc.close()
-
-    # --- 4b: OCR 识别 ---
-    print("\n--- 4b: OCR 识别提取的图片 ---")
-    ocr = RapidOCR()
-
-    # 对原图 OCR
-    with open(img_path, "rb") as f:
-        original_bytes = f.read()
-
-    import tempfile
-    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
-        f.write(original_bytes)
-        tmp_path = f.name
-    result_orig, _ = ocr(tmp_path)
-    os.unlink(tmp_path)
-    print(f"原图 OCR: {[line[1] for line in result_orig] if result_orig else []}")
-
-    # 对 PyMuPDF 提取的图片 OCR
-    pdf_doc = fitz.open(pdf_path)
-    xref = images[0][0]
-    bi = pdf_doc.extract_image(xref)
-    extracted_bytes = bi["image"]
-    pdf_doc.close()
-
-    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
-        f.write(extracted_bytes)
-        tmp_path = f.name
-    result_ext, _ = ocr(tmp_path)
-    os.unlink(tmp_path)
-    print(f"提取图 OCR: {[line[1] for line in result_ext] if result_ext else []}")
-    print(f"结果一致: {result_orig == result_ext}")
-
-    # --- 4c: images_inner_format 三种格式 ---
-    print("\n--- 4c: images_inner_format 三种格式 ---")
-    import base64
-
-    ocr_text = "\n".join(line[1] for line in result_ext) if result_ext else ""
-    b64 = base64.b64encode(extracted_bytes).decode()
-
-    formats = {
-        "text": ocr_text,
-        "markdown-img": f"![Extracted image](data:image/png;base64,{b64})\n{ocr_text}",
-        "html-img": f'<img src="data:image/png;base64,{b64}" />\n{ocr_text}',
-    }
-    for fmt, content in formats.items():
-        preview = content[:100].replace("\n", " ")
-        if fmt != "text":
-            preview = content.split("\n")[0][:60] + f"... + OCR文字"
-        print(f"  [{fmt}] {preview}")
+    # --- 4c: LLMImageBlobParser（示例，需 API Key） ---
+    print("\n--- 4c: LLMImageBlobParser（需 API Key，仅展示用法）---")
+    print("  from langchain_community.document_loaders.parsers import LLMImageBlobParser")
+    print("  from langchain_openai import ChatOpenAI")
+    print("  loader = PyPDFLoader(")
+    print("      'invoice.pdf',")
+    print("      extract_images=True,")
+    print("      images_parser=LLMImageBlobParser(")
+    print("          model=ChatOpenAI(model='gpt-4o-mini', max_tokens=1024)")
+    print("      ),")
+    print("  )")
 
 
 if __name__ == "__main__":
-    pdf_path = create_sample_pdf()
-    if pdf_path and os.path.exists(pdf_path):
+    pdf_path = os.path.join(DATA_DIR, "报销制度.pdf")
+    if os.path.exists(pdf_path):
         demo_basic(pdf_path)
         demo_lazy_load(pdf_path)
     demo_layout_mode()
-    demo_extract_images()
+    demo_extract_images(os.path.join(DATA_DIR, "test_invoice.pdf"))
