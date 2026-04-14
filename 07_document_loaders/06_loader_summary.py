@@ -66,31 +66,21 @@ def demo_loader_interface():
 
 def demo_loader_cheatsheet():
     """
-    常用 Loader 速查表。
+    常用 Loader 速查表（含文件类型、功能描述、工业场景、官方文档链接）。
     """
     print("\n=== 常用 Loader 速查 ===")
     print("""
-| Loader            | 来源           | 安装依赖            | 说明 |
-|-------------------|----------------|--------------------|------|
-| TextLoader        | langchain-community | 无         | 纯文本文件 |
-| DirectoryLoader   | langchain-community | 无         | 目录批量加载 |
-| CSVLoader         | langchain-community | 无         | CSV 表格 |
-| JSONLoader        | langchain-community | jq         | JSON（支持 jq 表达式）|
-| PyPDFLoader       | langchain-community | pypdf      | PDF（每页一个 Document）|
-| PyPDFium2Loader   | langchain-community | pypdfium2  | PDF（更快，基于 C++）|
-| UnstructuredLoader| langchain-community | unstructured| 通用（HTML/DOCX/PPT 等）|
-| WebBaseLoader     | langchain-community | bs4        | 网页（基于 BeautifulSoup）|
-| PythonLoader      | langchain-community | 无         | Python 源码文件 |
-
-官方文档：
-  TextLoader:         https://reference.langchain.com/python/langchain-community/document_loaders/text/TextLoader
-  DirectoryLoader:    https://reference.langchain.com/python/langchain-community/document_loaders/directory/DirectoryLoader
-  CSVLoader:          https://docs.langchain.com/oss/python/integrations/document_loaders/csv
-  JSONLoader:         https://docs.langchain.com/oss/python/integrations/document_loaders/json
-  PyPDFLoader:        https://docs.langchain.com/oss/python/integrations/document_loaders/pypdfloader
-  UnstructuredLoader: https://docs.langchain.com/oss/python/integrations/document_loaders/unstructured_file
-  WebBaseLoader:      https://docs.langchain.com/oss/python/integrations/document_loaders/web_base
-  PythonLoader:       https://docs.langchain.com/oss/python/integrations/document_loaders/python
+| Loader | 文件类型 | 依赖 | 功能描述 | 工业应用场景 | 官方文档 |
+|--------|----------|------|----------|------------|----------|
+| TextLoader | .txt | 无 | 纯文本文件加载，支持指定编码和自动检测 | 日志分析、合同文本处理、配置文件解析 | [API](https://python.langchain.com/api_reference/community/document_loaders/langchain_community.document_loaders.text.TextLoader.html) |
+| DirectoryLoader | 目录 | 无 | 批量加载目录下所有文件，可指定 loader_cls | 批量文档入库、知识库初始化、数据管线 | [API](https://python.langchain.com/api_reference/community/document_loaders/langchain_community.document_loaders.directory.DirectoryLoader.html) |
+| CSVLoader | .csv | 无 | 每行一个 Document，列名作为字段拼接 | 数据报表分析、用户行为数据、销售记录处理 | [Docs](https://docs.langchain.com/oss/python/integrations/document_loaders/csv) |
+| JSONLoader | .json | jq(可选) | 支持 jq 表达式精准提取嵌套字段 | API 响应解析、配置管理、半结构化数据处理 | [Docs](https://docs.langchain.com/oss/python/integrations/document_loaders/json) |
+| PyPDFLoader | .pdf | pypdf | 按页提取文本，支持 plain/layout 两种模式 | 发票/合同 OCR、法规文档处理、学术论文分析 | [Docs](https://docs.langchain.com/oss/python/integrations/document_loaders/pypdfloader) |
+| PyPDFium2Loader | .pdf | pypdfium2 | 基于 C++ 的 PDF 解析，性能优于 pypdf | 大批量 PDF 处理、对性能敏感的生产环境 | [API](https://python.langchain.com/api_reference/community/document_loaders/langchain_community.document_loaders.pypdfium2.PyPDFium2Loader.html) |
+| UnstructuredLoader | 多格式 | unstructured | 通用解析：HTML/DOCX/PPT/XLS/图片等 | 企业知识库建设（多格式文档统一入口） | [Docs](https://docs.langchain.com/oss/python/integrations/document_loaders/unstructured_file) |
+| WebBaseLoader | URL | bs4 | 爬取网页正文，基于 BeautifulSoup 提取 | 竞品监控、舆情分析、网页内容入库 | [Docs](https://docs.langchain.com/oss/python/integrations/document_loaders/web_base) |
+| PythonLoader | .py | 无 | 加载 Python 源码文件 | 代码仓库索引、代码检索 RAG、技术文档生成 | [API](https://python.langchain.com/api_reference/community/document_loaders/langchain_community.document_loaders.python.PythonLoader.html) |
 
 导入方式统一:
   from langchain_community.document_loaders import TextLoader, CSVLoader, ...
