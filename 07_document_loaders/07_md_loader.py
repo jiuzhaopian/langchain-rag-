@@ -52,20 +52,21 @@ def demo_unstructured_markdown():
     """
     UnstructuredMarkdownLoader 将 markdown 解析为结构化元素（Title、NarrativeText、ListItem 等），
     自动按标题分段，适合需要结构化处理的场景。
-    需要安装: pip install unstructured
+    需要安装: pip install unstructured markdown
     """
     print("\n=== 演示 2：UnstructuredMarkdownLoader（结构化解析）===")
     if not HAS_UNSTRUCTURED:
         print("未安装 unstructured，跳过此 demo。")
-        print("安装命令: pip install unstructured")
+        print("安装命令: pip install unstructured markdown")
         return
 
     try:
         loader = UnstructuredMarkdownLoader(DATA_FILE)
         docs = loader.load()
     except ModuleNotFoundError as e:
-        print(f"缺少依赖: {e}")
-        print("安装命令: pip install unstructured")
+        missing = str(e).split("'")[-2] if "'" in str(e) else str(e)
+        print(f"缺少依赖: {missing}")
+        print("安装命令: pip install unstructured markdown")
         return
 
     print(f"文档数: {len(docs)}")
@@ -99,8 +100,9 @@ def demo_comparison():
     try:
         docs_unstruct = UnstructuredMarkdownLoader(DATA_FILE).load()
     except ModuleNotFoundError as e:
-        print(f"缺少依赖: {e}")
-        print("安装命令: pip install unstructured")
+        missing = str(e).split("'")[-2] if "'" in str(e) else str(e)
+        print(f"缺少依赖: {missing}")
+        print("安装命令: pip install unstructured markdown")
         return
 
     print(f"{'':30} | TextLoader          | UnstructuredMarkdownLoader")
