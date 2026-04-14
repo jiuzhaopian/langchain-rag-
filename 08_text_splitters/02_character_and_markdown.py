@@ -48,8 +48,8 @@ def demo_character_splitter():
     for i, chunk in enumerate(chunks):
         print(f"  块 {i+1}（{len(chunk)} 字符）: {chunk[:40]}...")
 
-    print(f"\n注意: 第一段 {len('第一段内容比较长，它可能会超过 chunk_size。')} 字符 > chunk_size=50")
-    print("CharacterTextSplitter 不会继续拆分，整段保留")
+    print(f"\n实际结果: 整段 {len(chunks[0])} 字符，未超过 chunk_size=50，所以只有 1 个块")
+    print("如果单段超过 chunk_size，CharacterTextSplitter 不会继续拆分，整段保留")
 
 
 # ============================================================
