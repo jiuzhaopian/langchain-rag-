@@ -219,32 +219,15 @@ def demo_extract_images(pdf_path):
         print(f"Page {d.metadata.get('page')}:")
         print(d.page_content)
 
-    # --- 4b: LLMImageBlobParser（智谱 glm-5 多模态）---
-    print("\n--- 4b: PyPDFLoader + LLMImageBlobParser（智谱 glm-5）---")
+    # --- 4b: LLMImageBlobParser（智谱 glm-4.6v 多模态）---
+    print("\n--- 4b: PyPDFLoader + LLMImageBlobParser（智谱 glm-4.6v）---")
 
-    api_key = os.getenv("ZHIPUAI_API_KEY")
-    if not api_key:
-        print("跳过: 未设置 ZHIPUAI_API_KEY 环境变量")
-        print("\n用法示例（智谱 glm-5 多模态模型）:")
-        print("""  from langchain_community.document_loaders.parsers import LLMImageBlobParser
-  from langchain_community.chat_models import ChatZhipuAI
-
-  llm = ChatZhipuAI(model="glm-5", api_key="your_key")
-  loader = PyPDFLoader(
-      "invoice.pdf",
-      extract_images=True,
-      images_parser=LLMImageBlobParser(model=llm),
-  )
-  docs = loader.load()
-  for doc in docs:
-      print(doc.page_content)""")
-        return
-
-    llm = ChatZhipuAI(model="glm-5", api_key=api_key)
     loader = PyPDFLoader(
         pdf_path,
         extract_images=True,
-        images_parser=LLMImageBlobParser(model=llm),
+        images_parser=LLMImageBlobParser(
+            model=ChatZhipuAI(model="glm-4.6v", api_key=os.environ.get("ZHIPUAI_API_KEY"))
+        ),
     )
     docs = loader.load()
     for d in docs:
@@ -256,4 +239,8 @@ if __name__ == "__main__":
     demo_basic(os.path.join(DATA_DIR, "sample.pdf"))
     demo_lazy_load(os.path.join(DATA_DIR, "sample.pdf"))
     demo_layout_mode()
+
+    if not os.environ.get("ZHIPUAI_API_KEY"):
+        print("跳过: 未设置 ZHIPUAI_API_KEY 环境变量")
+        exit(1)
     demo_extract_images(os.path.join(DATA_DIR, "test_invoice.pdf"))

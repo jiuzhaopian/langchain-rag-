@@ -1,5 +1,5 @@
 """
-07_md_loader.py - Markdown 文件加载
+06_unstructured_md_loader.py - Markdown 文件加载（TextLoader vs UnstructuredMarkdownLoader）
 
 Markdown 本质是纯文本，TextLoader 可以直接加载，保留完整的 markdown 语法（标题、列表、代码块等）。
 如果需要将 markdown 解析为结构化元素（按标题分段等），可用 UnstructuredMarkdownLoader（需安装 unstructured）。
