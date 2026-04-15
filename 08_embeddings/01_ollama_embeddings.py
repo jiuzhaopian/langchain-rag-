@@ -50,6 +50,28 @@ def cosine_similarity(v1: list, v2: list) -> float:
     return dot_product / (norm_a * norm_b)               # cos(θ)
 
 
+def euclidean_distance(v1: list, v2: list) -> float:
+    """
+    欧氏距离（Euclidean Distance）
+
+    公式: d(A, B) = √(Σ(Aᵢ - Bᵢ)²)
+
+    即向量各维度差值的平方和再开根号，就是几何意义上的"直线距离"。
+
+    取值范围: [0, +∞)
+      0  → 两个向量完全相同
+      越大 → 差异越大
+
+    为什么 Embedding 相似度更常用余弦相似度而非欧氏距离？
+      - Embedding 向量通常维度很高（如 bge-m3 的 1024 维），欧氏距离会被维度放大
+      - 不同长度的文本产生的向量模长不同，欧氏距离会受长度影响
+      - 余弦相似度归一化了模长，只比较方向，更适合语义相似度场景
+      - 欧氏距离适合需要考虑绝对差值的场景（如聚类中的 K-Means）
+    """
+    a, b = np.array(v1), np.array(v2)
+    return np.sqrt(np.sum((a - b) ** 2))               # √(Σ(Aᵢ - Bᵢ)²)
+
+
 def demo_ollama_embeddings():
     """
     使用 OllamaEmbeddings（本地向量模型）
@@ -96,9 +118,16 @@ def demo_similarity():
         va = embeddings.embed_query(a)
         vb = embeddings.embed_query(b)
         sim = cosine_similarity(va, vb)
+        dist = euclidean_distance(va, vb)
         bar = "█" * int(sim * 20)
         print(f"  '{a}' vs '{b}'")
         print(f"  余弦相似度: {sim:.4f}  {bar}")
+        print(f"  欧氏距离:   {dist:.4f}")
+        print()
+
+    print("--- 观察 ---")
+    print("余弦相似度越高 → 欧氏距离越小（方向一致 + 距离近）")
+    print("但欧氏距离还受向量模长影响，不如余弦相似度稳定")
 
 
 if __name__ == "__main__":
