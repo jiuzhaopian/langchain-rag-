@@ -105,7 +105,7 @@ def demo_similarity():
 
     embeddings = OllamaEmbeddings(model="bge-m3")
 
-    print("\n=== 余弦相似度演示 ===\n")
+    print("\n=== 相似度演示 ===\n")
     print("原理: 将文本转为向量，计算两个向量的夹角余弦值")
     print("值越接近 1 表示语义越相似\n")
 
