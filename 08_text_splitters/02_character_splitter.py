@@ -8,13 +8,14 @@ CharacterTextSplitter 按单个指定分隔符切分，简单直接。
   - 适合已有天然分隔符的文本（如 JSON、日志等）
 
 参考文档：
-  - CharacterTextSplitter: https://reference.langchain.com/python/langchain-text-splitters/text_splitters/character_text_splitter/CharacterTextSplitter
+  - CharacterTextSplitter: https://reference.langchain.com/python/langchain-text-splitters/character/CharacterTextSplitter
+  - 源码：https://github.com/langchain-ai/langchain/blob/master/libs/text-splitters/langchain_text_splitters/character.py
 
 安装：
   pip install langchain-text-splitters
 """
 
-from langchain_text_splitters import CharacterTextSplitter
+from langchain_text_splitters import CharacterTextSplitter, RecursiveCharacterTextSplitter
 
 
 # ============================================================
@@ -43,13 +44,11 @@ def demo_basic():
     )
     chunks = splitter.split_text(text)
 
-    print(f"分隔符='\\n\\n', chunk_size=50")
-    print(f"切分为 {len(chunks)} 个块:")
+    print(f"分隔符='\\n\\n', chunk_size=50,切分为 {len(chunks)} 个块")
     for i, chunk in enumerate(chunks):
-        print(f"\n  块 {i+1}（{len(chunk)} 字符）:")
-        print(f"    {chunk[:60]}{'...' if len(chunk) > 60 else ''}")
+        print(f"\n  块 {i+1}（{len(chunk)} 字符）:{chunk}")
 
-    print(f"分析:")
+    print(f"---分析---")
     print(f"  块 1: {len(chunks[0])} 字符 > chunk_size=50")
     print(f"    → 超长，但 CharacterTextSplitter 只用 \\n\\n 这一个分隔符")
     print(f"    → 块内没有 \\n\\n 了，所以不会继续拆分，整段保留")
@@ -69,10 +68,8 @@ def demo_vs_recursive():
     """
     print("\n\n=== 演示 2：CharacterTextSplitter vs RecursiveCharacterTextSplitter ===")
 
-    from langchain_text_splitters import RecursiveCharacterTextSplitter
-
     text = (
-        "第一段内容很长很长很长很长很长很长，远远超过 chunk_size。\n\n"
+        "第一段内容很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长，远远超过 chunk_size。\n\n"
         "第二段短。\n\n"
         "第三段短。"
     )
@@ -86,11 +83,11 @@ def demo_vs_recursive():
     print(f"原文: 3 段（\\n\\n 分隔），第一段超长\n")
     print(f"CharacterTextSplitter: {len(char_chunks)} 个块")
     for i, c in enumerate(char_chunks):
-        print(f"  块 {i+1}（{len(c)} 字符）: {c[:40]}...")
+        print(f"  块 {i+1}（{len(c)} 字符）: {c}")
 
     print(f"\nRecursiveCharacterTextSplitter: {len(recursive_chunks)} 个块")
     for i, c in enumerate(recursive_chunks):
-        print(f"  块 {i+1}（{len(c)} 字符）: {c[:40]}...")
+        print(f"  块 {i+1}（{len(c)} 字符）: {c}")
 
     print(f"\n差异:")
     print(f"  CharacterTextSplitter: 超长块不拆 → 块大小不可控")

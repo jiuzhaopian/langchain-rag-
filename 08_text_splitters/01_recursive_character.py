@@ -10,6 +10,7 @@ RecursiveCharacterTextSplitter 是 LangChain 最常用的文本切分器。
   3. 如果合并后的块仍超过 chunk_size，用 "\\n"（换行）继续拆
   4. 还太大用 " "（空格）切，最后逐字符切
 
+先按最优先分隔符（如 \n\n）切分文本 → 遍历每个小段，不断将当前小段与下一个合并，直到总长度接近 chunk_size（考虑 overlap）→ 一旦超过 chunk_size，就回退一步，用更低一级的分隔符（如 \n）继续切分当前块
 核心：先切后合并，保证块尽量大但不超 chunk_size，同时在语义自然的位置切分。
 
 示例：SAMPLE_TEXT 有 6 个段落（\\n\\n 分隔），chunk_size=100 时：
@@ -19,7 +20,8 @@ RecursiveCharacterTextSplitter 是 LangChain 最常用的文本切分器。
   - 最终 3 个 chunk（不是 6 个）
 
 参考文档：
-  - RecursiveCharacterTextSplitter: https://reference.langchain.com/python/langchain-text-splitters/text_splitters/recursive_character_text_splitter/RecursiveCharacterTextSplitter
+  - RecursiveCharacterTextSplitter: https://reference.langchain.com/python/langchain-text-splitters/character/RecursiveCharacterTextSplitter
+  - 源码：https://github.com/langchain-ai/langchain/blob/master/libs/text-splitters/langchain_text_splitters/character.py
 
 安装：
   pip install langchain-text-splitters

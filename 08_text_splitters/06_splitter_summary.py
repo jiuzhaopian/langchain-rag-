@@ -1,10 +1,8 @@
 """
-05_splitter_summary.py - Text Splitters 总结 + 选择指南
+06_splitter_summary.py - Text Splitters 总结 + 选择指南
 
 汇总所有 Text Splitter 的知识，包括选型建议和参数调优。
 """
-
-from langchain_core.documents import Document
 
 
 # ============================================================
@@ -22,11 +20,18 @@ def demo_cheatsheet():
 | RecursiveCharacterTextSplitter  | 字符数 + 多分隔符递归 | str / Document | **通用首选**            |
 | CharacterTextSplitter           | 单个分隔符          | str / Document | 结构清晰的文本（JSON/日志） |
 | MarkdownHeaderTextSplitter      | Markdown 标题层级   | Document      | 技术文档/Wiki（按章节检索）  |
-| MarkdownTextSplitter            | Markdown 结构+字符数 | str           | 需要控制大小的 Markdown    |
-| HTMLSectionSplitter             | HTML 标题标签       | Document      | 网页内容/爬虫结果          |
-| LatexTextSplitter               | LaTeX 章节/环境     | str           | 学术论文/技术报告          |
+| MarkdownTextSplitter            | Markdown 结构+字符数 | str / Document | 需要控制大小的 Markdown    |
+| HTMLHeaderTextSplitter          | HTML 标题层级       | Document      | 网页内容（无额外依赖）      |
+| HTMLSectionSplitter             | HTML 标题标签       | Document      | 网页内容（需 lxml+bs4）   |
+| HTMLSemanticPreservingSplitter  | 标题+chunk_size    | Document      | 需保留链接/图片（Beta）    |
+| LatexTextSplitter               | LaTeX 章节/环境     | str / Document | 学术论文/技术报告          |
 | TokenTextSplitter               | Token 数           | str / Document | 精确控制 token           |
 | PythonCodeTextSplitter          | Python 语法        | str / Document | Python 源码             |
+
+说明：
+  - str = split_text() 的返回类型
+  - Document = split_documents() 的返回类型，带 metadata
+  - 所有 Splitter 的 split_documents() 都返回 Document，部分也支持 split_text() 返回 str
 
 导入:
   from langchain_text_splitters import RecursiveCharacterTextSplitter, ...
@@ -88,7 +93,7 @@ chunk_overlap（重叠大小）:
   - 长文档分析: chunk_size=1000, overlap=100
   - 代码文档: 用 PythonCodeTextSplitter（按语法切）
   - Markdown 文档: 用 MarkdownHeaderTextSplitter（按标题切）
-  - HTML 文档: 用 HTMLSectionSplitter（按标签切）
+  - HTML 文档: 用 HTMLHeaderTextSplitter（按标题切，无额外依赖）或 HTMLSectionSplitter（需 lxml）
 
 验证方法:
   切分后随机抽查几个块，确认语义是否完整、是否有明显的语义断裂。

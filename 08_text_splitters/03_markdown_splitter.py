@@ -4,9 +4,24 @@
 MarkdownHeaderTextSplitter: 按 Markdown 标题层级切分，保留标题路径作为 metadata。
 MarkdownTextSplitter: 按 Markdown 语义边界切分，同时遵守 chunk_size 限制。
 
+MarkdownHeaderTextSplitter 拆分规则（源码逻辑）：
+  1. 将 headers_to_split_on 按分隔符长度降序排列（如 "###" 排在 "##" 前面），
+     确保先匹配更长的标题标记，避免 "###" 被 "#" 误匹配
+  2. 逐行扫描 Markdown 文本，遇到匹配的标题行时，记录当前标题层级 metadata
+  3. 标题行之间的内容归入当前 metadata 对应的块
+  4. 连续多行同 metadata 的内容自动聚合为一个 Document（而非每行一个）
+  5. strip_headers=True（默认）时，标题行本身从 content 中移除，只保留正文
+  6. 不受 chunk_size 限制，纯按标题结构切分
+
+MarkdownTextSplitter 拆分规则：
+  本质上是 RecursiveCharacterTextSplitter 的子类，默认分隔符为
+  ["\n\n", "\n", " ", ""]，即先按空行（段落）切，再按换行（行）切，
+  再按空格（单词）切，最后逐字符切。同时受 chunk_size 限制。
+
 参考文档：
-  - MarkdownHeaderTextSplitter: https://reference.langchain.com/python/langchain-text-splitters/text_splitters/markdown/MarkdownHeaderTextSplitter
-  - MarkdownTextSplitter: https://reference.langchain.com/python/langchain-text-splitters/text_splitters/markdown/MarkdownTextSplitter
+  - MarkdownHeaderTextSplitter: https://reference.langchain.com/python/langchain-text-splitters/markdown/MarkdownHeaderTextSplitter
+  - MarkdownTextSplitter: https://reference.langchain.com/python/langchain-text-splitters/markdown/MarkdownTextSplitter
+  - 源码：https://github.com/langchain-ai/langchain/blob/master/libs/text-splitters/langchain_text_splitters/markdown.py
 
 安装：
   pip install langchain-text-splitters
@@ -70,10 +85,10 @@ RAG = 文档加载 + 文本切分 + 向量存储 + 检索 + 生成。
 
     print(f"切分为 {len(docs)} 个块:")
     for i, doc in enumerate(docs):
-        content_preview = doc.page_content[:60].replace("\n", " ")
+        content_preview = doc.page_content.replace("\n", " ")
         print(f"\n  块 {i+1}:")
         print(f"    metadata: {doc.metadata}")
-        print(f"    content:  {content_preview}...")
+        print(f"    content:  {content_preview}")
 
     print("\n特点:")
     print("  - 每块自动附带标题层级作为 metadata（h1, h2, h3）")
@@ -119,8 +134,8 @@ More content about section 2, covering advanced topics and RAG systems.
 
     print(f"chunk_size=80, 切分为 {len(chunks)} 个文本块:")
     for i, chunk in enumerate(chunks):
-        preview = chunk[:50].replace("\n", " ")
-        print(f"  块 {i+1}（{len(chunk)} 字符）: {preview}...")
+        preview = chunk.replace("\n", " ")
+        print(f"  块 {i+1}（{len(chunk)} 字符）: {preview}")
 
 
 # ============================================================
