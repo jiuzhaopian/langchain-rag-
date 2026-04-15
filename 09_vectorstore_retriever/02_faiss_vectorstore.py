@@ -70,7 +70,8 @@ def demo_with_metadata():
     FAISS 支持存储 metadata，搜索时一并返回。
     也支持按 metadata 过滤：filter 参数接收 dict 或 Callable。
 
-    过滤机制：先向量搜索 fetch_k 条（默认 20），再对结果做 filter 过滤（客户端过滤）。
+    过滤机制：先向量搜索 fetch_k 条（默认 20），再对结果做 filter 过滤（客户端过滤），
+    最后从过滤后的结果中返回 top k 条。
     这意味着如果符合条件的文档没被搜进 fetch_k，就会被漏掉。
     可以通过增大 fetch_k 来降低漏检概率。
     """

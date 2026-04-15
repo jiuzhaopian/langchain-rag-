@@ -83,7 +83,6 @@ def demo_metadata_filter():
         Document(page_content="Python 机器学习", metadata={"lang": "python", "level": "advanced"}),
     ]
 
-    # 不传 persist_directory，使用纯内存模式（本 demo 只演示过滤，不需要持久化）
     vectorstore = Chroma.from_documents(documents, embeddings)
 
     print("=== demo_2: metadata 过滤 ===")
