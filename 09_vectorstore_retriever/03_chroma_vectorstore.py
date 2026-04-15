@@ -8,7 +8,6 @@ Chroma 是一个开源的嵌入式向量数据库，特点是开箱即用、自�
 
 参考文档：
   - Chroma VectorStore: https://docs.langchain.com/oss/python/integrations/vectorstores/chroma
-  - 源码: https://github.com/langchain-ai/langchain/blob/master/libs/chroma/langchain_chroma/vectorstores.py
   - Chroma 官方: https://www.trychroma.com
 
 安装：

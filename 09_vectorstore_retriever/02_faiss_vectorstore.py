@@ -8,7 +8,6 @@ FAISS (Facebook AI Similarity Search) 是 Meta 开源的高性能向量搜索库
 
 参考文档：
   - FAISS VectorStore: https://docs.langchain.com/oss/python/integrations/vectorstores/faiss
-  - 源码: https://github.com/langchain-ai/langchain/blob/master/libs/community/langchain_community/vectorstores/faiss.py
   - FAISS 官方: https://github.com/facebookresearch/faiss
 
 安装：

@@ -7,7 +7,7 @@ InMemoryVectorStore 是 LangChain 内置的内存向量数据库，适合教学�
 核心流程：Embeddings → VectorStore.add_documents() → VectorStore.similarity_search()
 
 参考文档：
-  - InMemoryVectorStore: https://docs.langchain.com/oss/python/langchain/vectorstores/in_memory
+  - API 参考: https://reference.langchain.com/python/langchain-core/vectorstores/in_memory/InMemoryVectorStore
   - 源码: https://github.com/langchain-ai/langchain/blob/master/libs/core/langchain_core/vectorstores/in_memory.py
 
 安装：
@@ -92,7 +92,7 @@ def demo_from_documents():
 def demo_add_and_search_with_score():
     """
     动态添加文档 + similarity_search_with_score() - 返回相似度分数
-    分数是距离值，越小越相似（InMemoryVectorStore 用 L2 距离）。
+    分数是余弦相似度，范围 0~1，越大越相似（源码用 sklearn 的 cosine_similarity）。
     """
     embeddings = get_embeddings()
 
@@ -109,15 +109,15 @@ def demo_add_and_search_with_score():
     print("第一批: 3 条\n")
 
     # 再追加一批
-    vectorstore.add_texts([
-        "苹果的 M4 芯片性能强劲",
-        "三星 Galaxy 手机拍照出色",
+    vectorstore.add_documents(documents = [
+        Document(page_content="苹果的 M4 芯片性能强劲", metadata={"source": "tans", "topic": "apple"}),
+        Document(page_content="三星 Galaxy 手机拍照出色", metadata={"source": "tans", "topic": "sanx"}),
     ])
     print("追加: 2 条，共 5 条\n")
 
     # 带分数搜索
     results = vectorstore.similarity_search_with_score("苹果产品", k=3)
-    print("搜索 '苹果产品' (L2 距离，越小越相似):")
+    print("搜索 '苹果产品' (余弦相似度，越大越相似):")
     for i, (doc, score) in enumerate(results):
         print(f"  [{i+1}] score={score:.4f} | {doc.page_content}")
 
@@ -148,12 +148,12 @@ def demo_similarity_score_threshold():
 
     print("=== demo_4: 手动阈值过滤 ===")
 
-    # 手动过滤：分数低于阈值的才保留
-    threshold = 1.0  # L2 距离阈值（越小越严格）
+    # 手动过滤：分数高于阈值的才保留（余弦相似度，越大越相似）
+    threshold = 0.5  # 余弦相似度阈值（越高越严格）
     all_results = vectorstore.similarity_search_with_score("可爱的动物", k=4)
-    filtered = [(doc, score) for doc, score in all_results if score <= threshold]
+    filtered = [(doc, score) for doc, score in all_results if score >= threshold]
 
-    print(f"搜索 '可爱的动物'，阈值={threshold}（L2距离）:")
+    print(f"搜索 '可爱的动物'，阈值={threshold}（余弦相似度）:")
     for i, (doc, score) in enumerate(filtered):
         print(f"  [{i+1}] score={score:.4f} | {doc.page_content}")
     print(f"\n原始 {len(all_results)} 条 → 过滤后 {len(filtered)} 条")
@@ -168,26 +168,26 @@ def demo_similarity_score_threshold():
 def demo_delete():
     """
     delete() - 按 document id 删除。
-    注意：add_texts/add_documents 返回 ids 列表，可用于后续删除。
+    注意：delete() 接收的是 document ID（不是 page_content）。
+    add_texts() / add_documents() 返回 ids 列表，保存这些 id 即可后续删除。
     """
     embeddings = get_embeddings()
 
-    vectorstore = InMemoryVectorStore.from_texts(
-        ["文档A", "文档B", "文档C"],
-        embeddings,
-    )
+    # 用 add_texts 获取 ids
+    vectorstore = InMemoryVectorStore(embeddings)
+    ids = vectorstore.add_texts(["文档A", "文档B", "文档C"])
 
     print("=== demo_5: 删除文档 ===")
     print(f"初始: 3 条文档")
+    print(f"ids: {ids}")
 
-    # 删除第 1 条（id 是 add 时自动生成的字符串）
     results = vectorstore.similarity_search("文档", k=5)
     print(f"搜索结果: {[r.page_content for r in results]}")
 
-    # 通过 ids 删除
-    vectorstore.delete(["文档B"])  # 按 page_content 匹配删除
+    # 通过 id 删除第 2 条（文档B）
+    vectorstore.delete([ids[1]])
     results = vectorstore.similarity_search("文档", k=5)
-    print(f"删除 '文档B' 后: {[r.page_content for r in results]}")
+    print(f"删除 id={ids[1]} ('文档B') 后: {[r.page_content for r in results]}")
 
     print()
 
