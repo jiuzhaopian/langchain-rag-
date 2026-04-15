@@ -13,7 +13,7 @@ Embeddings 将文本转换为固定维度的浮点数向量。
 
 参考文档：
   - Embedding model integrations: https://docs.langchain.com/oss/python/integrations/embeddings
-  - Ollama Embeddings: https://python.langchain.com/docs/integrations/text_embedding/ollama/
+  - Ollama Embeddings: https://docs.langchain.com/oss/python/integrations/embeddings/ollama
 
 安装：
   pip install langchain-ollama numpy

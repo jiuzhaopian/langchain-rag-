@@ -18,13 +18,15 @@ DashScope Embeddings 有两种接入方式：
 
 参考文档：
   - DashScope 官方: https://help.aliyun.com/zh/model-studio/use-bailian-in-langchain
-  - DashScope Embeddings: https://python.langchain.com/docs/integrations/text_embedding/dashscope/
+  - DashScope Embeddings: https://docs.langchain.com/oss/python/integrations/embeddings/dashscope
 
 安装：
   pip install dashscope langchain-community langchain-openai
 """
 
 import os
+
+import numpy as np
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.embeddings import DashScopeEmbeddings
 
@@ -41,7 +43,6 @@ def cosine_similarity(v1: list, v2: list) -> float:
     取值范围: [-1, 1]，1 = 最相似，0 = 无关
     详见 01_ollama_embeddings.py 中的完整说明
     """
-    import numpy as np
     a, b = np.array(v1), np.array(v2)
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
 

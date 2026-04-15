@@ -1,4 +1,4 @@
-# LangChain Study - Models & Messages 教学案例
+# LangChain Study - LangChain 1.2.x 教学案例
 
 基于 LangChain 1.2.x 官方文档，使用国内可用 API（通义/DeepSeek/智谱/Ollama）。
 
@@ -28,7 +28,7 @@ LangChain 1.x 已将旧版 LLMs（纯文本补全）和 Chat Models 合并为**�
 ## 教学路径
 
 ```
-01_chat_models/     ← Chat Models 全用法
+01_chat_models/        ← Chat Models 全用法
 ├── 01_openai_compatible.py    通过 ChatOpenAI + base_url 兼容 OpenAI 协议的服务
 ├── 02_dashscope_native.py     通义千问 DashScope 原生接口（ChatTongyi）
 ├── 03_deepseek.py             DeepSeek（OpenAI 兼容）
@@ -39,54 +39,54 @@ LangChain 1.x 已将旧版 LLMs（纯文本补全）和 Chat Models 合并为**�
 ├── 08_batch.py                批量调用
 └── README.md
 
-02_messages/        ← Messages 组件
+02_messages/           ← Messages 组件
 ├── 01_message_types.py        Message 类型：System/Human/AI/Tool
 ├── 02_message_formats.py      Message 写法对比
 └── README.md
 
-03_embeddings/      ← Embeddings 向量模型
-├── 01_dashscope_embeddings.py 通义 Embeddings
-├── 02_ollama_embeddings.py    Ollama 本地 Embeddings
-├── 03_vectorstore_search.py   VectorStore + 语义搜索
-└── README.md
-
-04_prompts/         ← Prompts 提示词模板
+03_prompts/            ← Prompts 提示词模板
 ├── 01_prompt_template.py      PromptTemplate 纯文本模板
 ├── 02_chat_prompt_template.py ChatPromptTemplate 聊天模板（重点）
 ├── 03_messages_placeholder.py MessagesPlaceholder 对话历史插入
 ├── 04_few_shot_prompt.py      Few-Shot 少样本提示
 └── README.md
 
-05_output_parsers/   ← Output Parsers 输出解析器
+04_output_parsers/     ← Output Parsers 输出解析器
 ├── 01_string_json.py         StrOutputParser + JsonOutputParser
 ├── 02_pydantic_parser.py     PydanticOutputParser（重点）
 ├── 03_list_parser.py         CommaSeparatedListOutputParser + ListOutputParser
 ├── 04_custom_parser.py       BaseOutputParser 自定义解析器
 └── README.md
 
-06_chains/           ← LCEL 链式调用（Chains）
+05_chains/             ← LCEL 链式调用（Chains）
 ├── 01_basic_chain.py          基本链 + @chain 装饰器
 ├── 02_parallel_branch.py      RunnableParallel + RunnableBranch
-├── 03_passthrough_lambda.py    RunnablePassthrough/Pick + RunnableLambda
+├── 03_passthrough.py          RunnablePassthrough/Pick + RunnableLambda
+├── 04_chain_principle.py      LCEL 链原理剖析
 └── README.md
 
-07_document_loaders/ ← Document Loaders 文档加载
+06_document_loaders/   ← Document Loaders 文档加载
 ├── 01_text_loader.py          TextLoader 基础
-├── 02_directory_loader.py      DirectoryLoader 目录加载
-├── 03_csv_json_loader.py      CSV/JSON 文件加载
-├── 04_pdf_loader.py            PDF 文件加载
-├── 05_web_loader.py            Web 内容加载
+├── 02_directory_loader.py     DirectoryLoader 目录加载
+├── 03_csv_loader.py           CSV 文件加载
+├── 04_json_loader.py          JSON 文件加载（jq 筛选）
+├── 05_pdf_loader.py           PDF 文件加载
+├── 06_unstructured_md_loader.py Markdown 加载
+├── 07_loader_summary.py       总结 + 选型指南
 └── README.md
 
-08_text_splitters/   ← Text Splitters 文本分割
-├── 01_character_splitter.py    字符分割器
-├── 02_recursive_splitter.py    递归字符分割器
+07_text_splitters/     ← Text Splitters 文本分割
+├── 01_recursive_character.py  RecursiveCharacterTextSplitter（通用首选）
+├── 02_character_splitter.py   CharacterTextSplitter（单分隔符）
+├── 03_markdown_splitter.py    MarkdownHeaderTextSplitter + MarkdownTextSplitter
+├── 04_html_splitter.py        HTMLHeaderTextSplitter + HTMLSectionSplitter + HTMLSemanticPreservingSplitter
+├── 05_latex_splitter.py       LatexTextSplitter
+├── 06_splitter_summary.py     总结 + 选型速查 + 参数调优
 └── README.md
 
-09_retrieval/         ← Retrieval 检索（新增）
-├── 01_vector_store.py          InMemoryVectorStore 基础
-├── 02_retriever.py            Retriever 体系（VectorStore/BM25/MultiQuery）
-├── 03_rag_chain.py            完整 RAG 链
+08_embeddings/         ← Embeddings 向量模型（RAG 前置）
+├── 01_ollama_embeddings.py    本地 bge-m3 + 余弦相似度原理
+├── 02_dashscope_embeddings.py 通义 text-embedding-v3（原生 + OpenAI 兼容对比）
 └── README.md
 ```
 
@@ -118,8 +118,5 @@ python 01_chat_models/01_openai_compatible.py
 ## 参考
 
 - LangChain Models 文档: https://docs.langchain.com/oss/python/langchain/models
-- ChatTongyi 集成: https://python.langchain.com/docs/integrations/chat/tongyi/
-- ChatOllama 集成: https://python.langchain.com/docs/integrations/chat/ollama/
-- OpenAIEmbeddings 集成: https://python.langchain.com/docs/integrations/text_embedding/openai/
-- LangChain Retrieval: https://python.langchain.com/oss/api_reference/core/retrievers.html
-- LangChain VectorStore: https://python.langchain.com/oss/api_reference/core/vectorstores.html
+- LangChain Retrieval: https://docs.langchain.com/oss/python/langchain/retrievers
+- LangChain VectorStore: https://docs.langchain.com/oss/python/langchain/vectorstores
