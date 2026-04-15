@@ -80,6 +80,7 @@ def demo_with_metadata():
 
     print("=== demo_2: 带 metadata 搜索 ===")
     results = vectorstore.similarity_search_with_score("Python 学习", k=2)
+    print("搜索 'Python 学习' (L2 距离，越小越相似):")
     for i, (doc, score) in enumerate(results):
         print(f"  [{i+1}] score={score:.4f} | {doc.page_content}")
         print(f"       metadata: {doc.metadata}")
@@ -162,9 +163,14 @@ def demo_persistence():
 
 def demo_consistency():
     """
-    相同数据、相同 Embeddings，InMemoryVectorStore 和 FAISS 结果是否一致？
-    FAISS 默认用 L2 距离（IndexFlatL2），InMemoryVectorStore 也用 L2。
-    两者结果应高度一致（排序可能略有差异，但 Top-K 内容相同）。
+    相同数据、相同 Embeddings，InMemoryVectorStore 和 FAISS 搜索结果是否一致？
+
+    注意两者的距离度量不同：
+    - FAISS 默认用 L2 距离（IndexFlatL2），score 越小越相似
+    - InMemoryVectorStore 用余弦相似度，score 越大越相似
+
+    但 similarity_search() 不返回分数，只按相似度排序返回 Top-K，
+    所以两者的 Top-K 内容应该一致（排序可能略有差异，但通常相同）。
     """
     from langchain_core.vectorstores import InMemoryVectorStore
 
@@ -186,7 +192,7 @@ def demo_consistency():
 
     print(f"InMemory: {r1}")
     print(f"FAISS:     {r2}")
-    print(f"一致: {'✅' if r1 == r2 else '⚠️ 排序略有差异（正常，分数非常接近时可能不同）'}")
+    print(f"一致: {'✅' if r1 == r2 else '⚠️ 排序略有差异（不同距离度量，分数非常接近时可能排序不同）'}")
 
     print()
 
