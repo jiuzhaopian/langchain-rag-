@@ -169,8 +169,16 @@ def demo_consistency():
     - FAISS 默认用 L2 距离（IndexFlatL2），score 越小越相似
     - InMemoryVectorStore 用余弦相似度，score 越大越相似
 
-    但 similarity_search() 不返回分数，只按相似度排序返回 Top-K，
-    所以两者的 Top-K 内容应该一致（排序可能略有差异，但通常相同）。
+    什么是 L2 距离（欧氏距离）？
+      两个向量 a 和 b 的 L2 距离 = sqrt(sum((a_i - b_i)^2))
+      即各维度差值的平方和再开根号。值域 [0, +∞)，0 表示完全相同。
+
+    什么是余弦相似度？
+      cosine(a, b) = (a·b) / (|a| × |b|)
+      衡量向量方向的夹角，不关心长度。值域 [-1, 1]，1 表示方向完全相同。
+
+    两者的排序结果通常一致（最相似的文档不管用哪种度量都排在前面），
+    但分数非常接近时可能排序不同。
     """
     from langchain_core.vectorstores import InMemoryVectorStore
 
