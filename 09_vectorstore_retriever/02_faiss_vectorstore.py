@@ -68,8 +68,11 @@ def demo_basic():
 def demo_with_metadata():
     """
     FAISS 支持存储 metadata，搜索时一并返回。
-    注意：FAISS 本身不支持按 metadata 过滤，
-    LangChain 的 FAISS 实现通过内存中的 docstore 辅助实现简单的 metadata 过滤。
+    也支持按 metadata 过滤：filter 参数接收 dict 或 Callable。
+
+    过滤机制：先向量搜索 fetch_k 条（默认 20），再对结果做 filter 过滤（客户端过滤）。
+    这意味着如果符合条件的文档没被搜进 fetch_k，就会被漏掉。
+    可以通过增大 fetch_k 来降低漏检概率。
     """
     embeddings = get_embeddings()
 
@@ -81,11 +84,26 @@ def demo_with_metadata():
     ]
     vectorstore = FAISS.from_documents(documents, embeddings)
 
-    print("=== demo_2: 带 metadata 搜索 ===")
+    # 2a: 基本搜索（不过滤）
+    print("=== demo_2a: 带 metadata 搜索（不过滤） ===")
     results = vectorstore.similarity_search_with_score("Python 学习", k=2)
     print("搜索 'Python 学习' (L2 距离，越小越相似):")
     for i, (doc, score) in enumerate(results):
         print(f"  [{i+1}] score={score:.4f} | {doc.page_content}")
+        print(f"       metadata: {doc.metadata}")
+    print()
+
+    # 2b: 按 metadata 过滤
+    print("=== demo_2b: metadata 过滤 (category=python) ===")
+    results = vectorstore.similarity_search(
+        "Python 学习",
+        k=2,
+        filter={"category": "python"},
+        fetch_k=20,  # 先搜 20 条再过滤，减少漏检
+    )
+    print("过滤条件: category=python")
+    for i, doc in enumerate(results):
+        print(f"  [{i+1}] {doc.page_content}")
         print(f"       metadata: {doc.metadata}")
 
     print()
