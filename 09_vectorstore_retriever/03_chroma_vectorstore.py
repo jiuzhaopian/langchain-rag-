@@ -164,7 +164,7 @@ def demo_persistence():
 def demo_add_delete():
     """
     Chroma 支持直接 add_documents / add_texts 到已有集合，
-    也支持 delete 按条件删除。比 FAISS 的 merge_from 更方便。
+    也支持 delete 按 id 删除。add 时可以指定 ids，用于后续删除。
     """
     import tempfile
     import shutil
@@ -172,26 +172,29 @@ def demo_add_delete():
     embeddings = get_embeddings()
     persist_dir = tempfile.mkdtemp()
 
-    vectorstore = Chroma.from_texts(
-        ["初始文档 A", "初始文档 B"],
+    # add_documents 时指定 ids
+    vectorstore = Chroma.from_documents(
+        [Document(page_content="初始文档 A", metadata={"type": "init"}),
+         Document(page_content="初始文档 B", metadata={"type": "init"})],
         embeddings,
+        ids=["doc_a", "doc_b"],
         persist_directory=persist_dir,
     )
 
     print("=== demo_4: 增量添加 + 删除 ===")
     print(f"初始: 2 条\n")
 
-    # 增量添加
-    vectorstore.add_texts(["新增文档 C", "新增文档 D"])
+    # 增量添加（也指定 ids）
+    vectorstore.add_texts(["新增文档 C", "新增文档 D"], ids=["doc_c", "doc_d"])
     results = vectorstore.similarity_search("文档", k=5)
     print(f"添加 2 条后 ({len(results)} 条):")
     for doc in results:
         print(f"  - {doc.page_content}")
 
-    # 按条件删除
-    vectorstore.delete(where={"$contains": "初始"})
+    # 按 id 删除
+    vectorstore.delete(ids=["doc_a", "doc_b"])
     results = vectorstore.similarity_search("文档", k=5)
-    print(f"\n删除 '初始' 相关后 ({len(results)} 条):")
+    print(f"\n删除 doc_a, doc_b 后 ({len(results)} 条):")
     for doc in results:
         print(f"  - {doc.page_content}")
 
@@ -245,7 +248,7 @@ def demo_comparison():
 | 持久化         | ❌       | save_local 手动 | ✅ 自动         |
 | 元数据过滤     | ❌       | ❌ (辅助实现)    | ✅ 原生支持     |
 | 增量添加       | ✅       | merge_from      | ✅ add_texts   |
-| 删除           | ✗        | ❌              | ✅ where 条件  |
+| 删除           | ✗        | ❌              | ✅ delete(ids) |
 | 大数据性能     | 慢       | ⚡ 快（亿级）    | 中等（百万级）  |
 | 适用场景       | 教学/测试 | 生产/高性能     | 开发/中小规模   |
 | 安装复杂度     | 零依赖    | faiss-cpu       | langchain-chroma |

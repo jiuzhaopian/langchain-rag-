@@ -168,32 +168,26 @@ def demo_similarity_score_threshold():
 def demo_delete():
     """
     delete() - 按 document id 删除。
-    注意：delete() 接收的是 document ID（不是 page_content）。
-    add_texts() / add_documents() 返回 ids 列表，保存这些 id 即可后续删除。
+    注意：add_texts/add_documents 返回 ids 列表，可用于后续删除。
     """
     embeddings = get_embeddings()
 
-    # add_texts 返回 ids
-    ids = InMemoryVectorStore.from_texts(
+    vectorstore = InMemoryVectorStore.from_texts(
         ["文档A", "文档B", "文档C"],
         embeddings,
-    ).store  # 从已有的 vectorstore 获取 store
-
-    # 重新创建，用 add_texts 获取 ids
-    vectorstore = InMemoryVectorStore(embeddings)
-    ids = vectorstore.add_texts(["文档A", "文档B", "文档C"])
+    )
 
     print("=== demo_5: 删除文档 ===")
     print(f"初始: 3 条文档")
-    print(f"ids: {ids}")
 
+    # 删除第 1 条（id 是 add 时自动生成的字符串）
     results = vectorstore.similarity_search("文档", k=5)
     print(f"搜索结果: {[r.page_content for r in results]}")
 
-    # 通过 id 删除第 2 条（文档B）
-    vectorstore.delete([ids[1]])
+    # 通过 ids 删除
+    vectorstore.delete(["文档B"])  # 按 page_content 匹配删除
     results = vectorstore.similarity_search("文档", k=5)
-    print(f"删除 id={ids[1]} ('文档B') 后: {[r.page_content for r in results]}")
+    print(f"删除 '文档B' 后: {[r.page_content for r in results]}")
 
     print()
 

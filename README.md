@@ -85,8 +85,15 @@ LangChain 1.x 已将旧版 LLMs（纯文本补全）和 Chat Models 合并为**�
 └── README.md
 
 08_embeddings/         ← Embeddings 向量模型（RAG 前置）
-├── 01_ollama_embeddings.py    本地 bge-m3 + 余弦相似度原理
+├── 01_ollama_embeddings.py    本地 bge-m3 + 余弦相似度/欧氏距离原理
 ├── 02_dashscope_embeddings.py 通义 text-embedding-v3（原生 + OpenAI 兼容对比）
+└── README.md
+
+09_vectorstore_retriever/ ← VectorStore + Retriever
+├── 01_inmemory_vectorstore.py    InMemoryVectorStore 基础：创建/搜索/带分数/阈值过滤/删除
+├── 02_faiss_vectorstore.py       FAISS：高性能/merge增量/persistence/一致性对比
+├── 03_chroma_vectorstore.py      Chroma：metadata过滤/持久化/增量添加删除/三者对比
+├── 04_retriever.py               as_retriever + similarity/MMR/score_threshold + LCEL集成
 └── README.md
 ```
 
