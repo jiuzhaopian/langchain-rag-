@@ -12,6 +12,9 @@ FAISS (Facebook AI Similarity Search) 是 Meta 开源的高性能向量搜索库
 
 安装：
   pip install langchain-community langchain-ollama faiss-cpu
+
+  # Windows / Linux / macOS (Intel & Apple Silicon) 均可直接安装 faiss-cpu
+  # 如需 GPU 加速（需 CUDA 环境）：pip install faiss-gpu
 """
 
 from langchain_core.documents import Document
