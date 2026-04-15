@@ -66,10 +66,12 @@ def demo_basic():
 
 def demo_metadata_filter():
     """
-    Chroma 原生支持按 metadata 过滤，这是相比 FAISS 的一大优势。
-    过滤条件通过 filter 参数传入，支持 $eq / $ne / $gt / $lt / $in 等操作符。
+    Chroma 原生支持按 metadata 过滤（filter 参数接收 dict，按 key-value 精确匹配）。
+    注意：三种 VectorStore 都支持 metadata 过滤，但方式不同：
+      - Chroma: filter=dict（如 {"lang": "python"}），服务端过滤
+      - FAISS: filter=dict 或 Callable，客户端过滤（先搜索 fetch_k 条再过滤）
+      - InMemory: filter=Callable（函数式过滤）
     """
-    import tempfile
 
     embeddings = get_embeddings()
 
@@ -81,9 +83,8 @@ def demo_metadata_filter():
         Document(page_content="Python 机器学习", metadata={"lang": "python", "level": "advanced"}),
     ]
 
-    # 使用临时目录作为持久化路径
-    persist_dir = tempfile.mkdtemp()
-    vectorstore = Chroma.from_documents(documents, embeddings, persist_directory=persist_dir)
+    # 不传 persist_directory，使用纯内存模式（本 demo 只演示过滤，不需要持久化）
+    vectorstore = Chroma.from_documents(documents, embeddings)
 
     print("=== demo_2: metadata 过滤 ===")
 
@@ -111,8 +112,6 @@ def demo_metadata_filter():
 
     # 清理
     vectorstore.delete_collection()
-    import shutil
-    shutil.rmtree(persist_dir)
 
     print()
 
@@ -245,9 +244,9 @@ def demo_comparison():
 | 特性           | InMemory | FAISS           | Chroma         |
 |---------------|----------|-----------------|----------------|
 | 持久化         | ❌       | save_local 手动 | ✅ 自动         |
-| 元数据过滤     | ❌       | ❌ (辅助实现)    | ✅ 原生支持     |
+| 元数据过滤     | ✅ Callable | ✅ dict/Callable | ✅ dict 原生   |
 | 增量添加       | ✅       | merge_from      | ✅ add_texts   |
-| 删除           | ✗        | ❌              | ✅ delete(ids) |
+| 删除           | ✅ delete(ids) | ✅ delete(ids) | ✅ delete(ids) |
 | 大数据性能     | 慢       | ⚡ 快（亿级）    | 中等（百万级）  |
 | 适用场景       | 教学/测试 | 生产/高性能     | 开发/中小规模   |
 | 安装复杂度     | 零依赖    | faiss-cpu       | langchain-chroma |
