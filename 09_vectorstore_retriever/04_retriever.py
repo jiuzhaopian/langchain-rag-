@@ -31,7 +31,6 @@ def get_embeddings():
 # ============================================================
 
 def create_vectorstore():
-    """创建教学用的 VectorStore（多篇关于不同主题的文档）"""
     embeddings = get_embeddings()
     documents = [
         Document(page_content="Python 是一门广泛使用的高级编程语言", metadata={"topic": "python"}),
@@ -60,7 +59,7 @@ def demo_similarity():
     print("=== demo_1: similarity（纯相似度） ===")
     print("search_type='similarity', k=3\n")
 
-    retriever = vs.as_retriever(search_type="similarity", k=3)
+    retriever = vs.as_retriever(search_type="similarity", search_kwargs={"k": 3})
     results = retriever.invoke("Python 编程")
     for i, doc in enumerate(results):
         print(f"  [{i+1}] {doc.page_content}")
@@ -78,18 +77,30 @@ def demo_mmr():
     search_type="mmr" - 最大边际相关性（Maximal Marginal Relevance）。
     平衡「相关性」和「多样性」，避免返回内容高度重复的结果。
 
-    关键参数：
-      fetch_k: 先从 VectorStore 取多少条候选（默认 20）
+    通俗理解：假设你问"Python编程"，纯相似度搜索可能返回：
+      1. Python是广泛使用的高级编程语言
+      2. Python是机器学习最常用的编程语言
+      3. Python的NumPy库用于科学计算
+    三条都说Python，内容高度重复。MMR会尽量选不同角度的结果：
+      1. Python是广泛使用的高级编程语言  （最相关）
+      2. Java也可以用于机器学习  （稍远但提供不同视角）
+      3. 机器学习是人工智能的核心技术  （又换个角度）
+
+    关键参数（基于 VectorStore.max_marginal_relevance_search 源码）：
+      fetch_k: 先从向量索引取多少条候选文档传给 MMR 算法（默认 20）
       k: 最终返回多少条（默认 4）
-      lambda_mult: 多样性权重，0=最大多样性，1=纯相似度（默认 0.5）
+      lambda_mult: 0~1 之间，控制多样性程度。
+                   0 = 最大多样性（尽量选不同的），
+                   1 = 最小多样性（纯相似度，退化为 similarity）
+                   默认 0.5
     """
     vs = create_vectorstore()
 
     print("=== demo_2: MMR（最大边际相关性） ===")
 
     # 对比：same query, similarity vs MMR
-    retriever_sim = vs.as_retriever(search_type="similarity", k=4)
-    retriever_mmr = vs.as_retriever(search_type="mmr", k=4, fetch_k=8)
+    retriever_sim = vs.as_retriever(search_type="similarity", search_kwargs={"k": 4})
+    retriever_mmr = vs.as_retriever(search_type="mmr", search_kwargs={"k": 4, "fetch_k": 8})
 
     query = "Python 机器学习"
     r_sim = retriever_sim.invoke(query)
@@ -117,7 +128,8 @@ def demo_mmr():
 
 def demo_mmr_lambda():
     """
-    lambda_mult 控制 MMR 的多样性程度。
+    lambda_mult 控制 MMR 的多样性程度（源码：max_marginal_relevance_search 参数）。
+    取值 0~1：0 = 最大多样性，1 = 最小多样性（纯相似度）。
     """
     vs = create_vectorstore()
 
@@ -126,7 +138,7 @@ def demo_mmr_lambda():
     query = "编程语言"
     for lam in [0.0, 0.5, 1.0]:
         retriever = vs.as_retriever(
-            search_type="mmr", k=3, fetch_k=8, lambda_mult=lam
+            search_type="mmr", search_kwargs={"k": 3, "fetch_k": 8, "lambda_mult": lam}
         )
         results = retriever.invoke(query)
         topics = [doc.metadata.get("topic", "?") for doc in results]
@@ -180,8 +192,7 @@ def demo_score_threshold():
     for threshold in [0.5, 1.0, 2.0]:
         retriever = vs.as_retriever(
             search_type="similarity_score_threshold",
-            k=5,
-            score_threshold=threshold,
+            search_kwargs={"k": 5, "score_threshold": threshold},
         )
         results = retriever.invoke(query)
         print(f"阈值={threshold}: 返回 {len(results)} 条")
@@ -195,57 +206,6 @@ def demo_score_threshold():
 
     print()
 
-
-# ============================================================
-# 演示 5：Retriever 的核心价值 - 统一接口 + LCEL 集成
-# ============================================================
-
-def demo_lcel_integration():
-    """
-    Retriever 实现了 Runnable 接口，可以直接接入 LCEL 链。
-    演示 Retriever + RunnablePassthrough 的基本组合。
-    """
-    from langchain_core.prompts import ChatPromptTemplate
-    from langchain_core.output_parsers import StrOutputParser
-    from langchain_core.runnables import RunnablePassthrough
-
-    vs = create_vectorstore()
-    retriever = vs.as_retriever(search_type="similarity", k=3)
-
-    print("=== demo_5: Retriever + LCEL 链 ===")
-
-    # 定义链（只展示结构，不实际调用 LLM）
-    prompt = ChatPromptTemplate.from_template(
-        "根据以下上下文回答问题：\n\n{context}\n\n问题：{question}"
-    )
-
-    # format_docs: 将 Document 列表格式化为文本
-    def format_docs(docs):
-        return "\n---\n".join(doc.page_content for doc in docs)
-
-    # 构建 RAG 链的结构
-    rag_chain = (
-        {"context": retriever | format_docs, "question": RunnablePassthrough()}
-        | prompt
-        | StrOutputParser()
-    )
-
-    print("RAG 链结构：")
-    print("  retriever | format_docs → 构建 context")
-    print("  RunnablePassthrough() → 透传 question")
-    print("  prompt | StrOutputParser → 生成回答")
-    print()
-    print(f"Retriever 类型: {type(retriever).__name__}")
-    print(f"Retriever 是 Runnable: {hasattr(retriever, 'invoke')}")
-
-    # 测试 retriever 部分（不调用 LLM）
-    print(f"\n检索 'Python 机器学习':")
-    docs = retriever.invoke("Python 机器学习")
-    print(f"返回 {len(docs)} 条文档")
-
-    print("\n注：完整 RAG 链需要 LLM，将在下一节 RAG Chain 中实现")
-
-    print()
 
 
 if __name__ == "__main__":
@@ -266,4 +226,3 @@ if __name__ == "__main__":
     demo_mmr()
     demo_mmr_lambda()
     demo_score_threshold()
-    demo_lcel_integration()
