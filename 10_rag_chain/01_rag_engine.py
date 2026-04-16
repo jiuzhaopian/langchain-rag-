@@ -247,6 +247,7 @@ class RAGEngine:
         )
 
         def format_docs(docs):
+            self._print_retrieved_docs(docs)
             return "\n\n".join(
                 f"[来源: {d.metadata.get('source_file', '未知')}]\n{d.page_content}"
                 for d in docs
