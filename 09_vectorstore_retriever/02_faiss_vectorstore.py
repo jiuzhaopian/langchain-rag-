@@ -87,7 +87,7 @@ def demo_with_metadata():
     # 2a: 基本搜索（不过滤）
     print("=== demo_2a: 带 metadata 搜索（不过滤） ===")
     results = vectorstore.similarity_search_with_score("Python 学习", k=2)
-    print("搜索 'Python 学习' (L2 距离，越小越相似):")
+    print("搜索 'Python 学习' (FAISS 默认用 L2 距离，score 越小越相似):")
     for i, (doc, score) in enumerate(results):
         print(f"  [{i+1}] score={score:.4f} | {doc.page_content}")
         print(f"       metadata: {doc.metadata}")

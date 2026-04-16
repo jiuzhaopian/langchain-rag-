@@ -28,7 +28,7 @@ def get_embeddings():
     return OllamaEmbeddings(model="bge-m3")
 
 
-# Chroma 距离度量：显式指定 cosine
+# Chroma 距离度量：显式指定 cosine，Chroma默认返回L2
 #
 # bge-m3（以及 OpenAI、DashScope 等主流模型）输出的向量是归一化的（模长=1）。
 # 归一化向量下 L2 和 cosine 排序完全等价（L2² = 2(1-cos)），TopK 结果一模一样，

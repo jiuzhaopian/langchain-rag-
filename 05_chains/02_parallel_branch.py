@@ -9,6 +9,8 @@ Runnable 组合模式：
 参考文档：
   - RunnableParallel: https://reference.langchain.com/python/langchain-core/runnables/base/RunnableParallel
   - RunnableBranch: https://reference.langchain.com/python/langchain-core/runnables/branch/RunnableBranch
+  - RunnablePassthrough: https://reference.langchain.com/python/langchain-core/runnables/passthrough/RunnablePassthrough
+  - RunnableLambda: https://reference.langchain.com/python/langchain-core/runnables/base/RunnableLambda
   - 源码: https://github.com/langchain-ai/langchain/blob/master/libs/core/langchain_core/runnables/
 
 安装：

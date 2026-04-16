@@ -7,6 +7,9 @@ LCEL（LangChain Expression Language）用 | 管道符组合 Runnable，构成�
 
 参考文档：
   - RunnableSequence: https://reference.langchain.com/python/langchain-core/runnables/base/RunnableSequence
+  - RunnableLambda: https://reference.langchain.com/python/langchain-core/runnables/base/RunnableLambda
+  - StrOutputParser: https://reference.langchain.com/python/langchain-core/output_parsers/string/StrOutputParser
+  - ChatPromptTemplate: https://reference.langchain.com/python/langchain-core/prompts/chat/ChatPromptTemplate
   - 源码: https://github.com/langchain-ai/langchain/blob/master/libs/core/langchain_core/runnables/
 
 安装：

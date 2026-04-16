@@ -197,7 +197,7 @@ def demo_separators():
     print(f"\n中文分隔符 ['\\n\\n', '。', '\\n', '，', ' ', '']:")
     print(f"  -> {len(chunks)} 个块")
     for i, chunk in enumerate(chunks):
-        print(f"  块 {i+1};大小:{len(chunk)}: {chunk[:50]}...")
+        print(f"  块 {i+1};大小:{len(chunk)}: {chunk}")
 
 
 # ============================================================
@@ -229,7 +229,7 @@ def demo_length_function():
     print(f"\n中文加权长度（中文=2, 英文=1）:")
     print(f"  -> {len(chunks)} 个块")
     for i, chunk in enumerate(chunks):
-        print(f"  块 {i + 1};大小:{len(chunk)}: {chunk[:50]}...")
+        print(f"  块 {i + 1};大小:{len(chunk)}: {chunk}")
 
 
 if __name__ == "__main__":
