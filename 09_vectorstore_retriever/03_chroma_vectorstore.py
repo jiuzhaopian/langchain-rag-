@@ -28,8 +28,8 @@ def get_embeddings():
     return OllamaEmbeddings(model="bge-m3")
 
 
-# Chroma collection 元数据：bge-m3 输出归一化向量，必须用 cosine 距离
-# （Chroma 默认 L2，对归一化向量语义检索不准确）
+# Chroma collection 元数据：显式指定 cosine 距离
+# 注：归一化向量下 L2 和 cosine 排序等价（L2² = 2(1-cos)），指定 cosine 仅为了语义清晰
 CHROMA_COLLECTION_METADATA = {"hnsw:space": "cosine"}
 
 

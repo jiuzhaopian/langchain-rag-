@@ -66,7 +66,7 @@ class DocumentManager:
         )
 
         # 初始化 Chroma（已有数据自动加载）
-        # 注意：bge-m3 输出归一化向量，必须用 cosine 距离，不能用默认的 l2
+        # 显式指定 cosine 距离（归一化向量下 L2/cosine 排序等价，此处仅为语义清晰）
         self.vectorstore = Chroma(
             persist_directory=str(self.persist_dir),
             embedding_function=self.embeddings,
