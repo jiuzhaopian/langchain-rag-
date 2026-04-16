@@ -29,7 +29,13 @@ def get_embeddings():
 
 
 # Chroma collection 元数据：显式指定 cosine 距离
-# 注：归一化向量下 L2 和 cosine 排序等价（L2² = 2(1-cos)），指定 cosine 仅为了语义清晰
+#
+# 为什么要指定 cosine？
+# - 归一化向量下 L2 和 cosine 排序等价（L2² = 2(1-cos)），TopK 结果一模一样
+# - 但分数值不同：cosine 下分数 = 余弦相似度（如 0.6），直观易懂
+# - L2 下经 _euclidean_relevance_score_fn 转换后分数被非线性压缩（如 0.37），
+#   学员看到"相关文档才 0.37 分"会产生困惑
+# - 指定 cosine 让分数即可解释又好看
 CHROMA_COLLECTION_METADATA = {"hnsw:space": "cosine"}
 
 
