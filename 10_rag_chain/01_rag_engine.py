@@ -72,9 +72,8 @@ class DocumentManager:
         # 初始化 Chroma（已有数据自动加载）
         from importlib import import_module
         _module_dir = Path(__file__).parent
-        import sys
-        sys.path.insert(0, str(_module_dir))
-        _config = importlib.import_module("00_rag_config")
+        _sys.path.insert(0, str(_module_dir))
+        _config = _importlib.import_module("00_rag_config")
 
         self.vectorstore = Chroma(
             persist_directory=str(self.persist_dir),
