@@ -31,11 +31,11 @@ from langchain_community.document_loaders import (
 # 00_rag_config.py: 全局配置（模型、向量库、切分、检索参数）
 # 01_rag_engine.py: 核心引擎（DocumentManager + RAGEngine）
 # 02_streamlit_app.py: Streamlit UI（文档管理 + RAG 对话）
-import sys as _sys
-_module_dir = Path(__file__).parent
-_sys.path.insert(0, str(_module_dir))
-import importlib as _importlib
-_config = _importlib.import_module("00_rag_config")
+import sys as _sys  # 别名 _sys 避免污染模块命名空间
+_module_dir = Path(__file__).parent  # 当前文件所在目录
+_sys.path.insert(0, str(_module_dir))  # 将当前目录加入搜索路径，确保能找到 00_rag_config
+import importlib as _importlib  # 动态导入模块的标准库
+_config = _importlib.import_module("00_rag_config")  # 导入配置模块（数字前缀无法用 from ... import）
 
 
 # ============================================================
