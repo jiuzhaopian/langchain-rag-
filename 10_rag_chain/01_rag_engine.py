@@ -66,10 +66,12 @@ class DocumentManager:
         )
 
         # 初始化 Chroma（已有数据自动加载）
+        # 注意：bge-m3 输出归一化向量，必须用 cosine 距离，不能用默认的 l2
         self.vectorstore = Chroma(
             persist_directory=str(self.persist_dir),
             embedding_function=self.embeddings,
             collection_name="rag_docs",
+            collection_metadata={"hnsw:space": "cosine"},
         )
 
     def process_file(self, file_path: str) -> int:
@@ -138,6 +140,7 @@ class DocumentManager:
             persist_directory=str(self.persist_dir),
             embedding_function=self.embeddings,
             collection_name="rag_docs",
+            collection_metadata={"hnsw:space": "cosine"},
         )
 
     def list_sources(self) -> list[str]:
