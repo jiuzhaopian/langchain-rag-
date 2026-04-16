@@ -40,6 +40,7 @@ def create_vectorstore():
         Document(page_content="机器学习是人工智能的核心技术", metadata={"topic": "ml"}),
         Document(page_content="深度学习使用神经网络处理复杂任务", metadata={"topic": "ml"}),
         Document(page_content="Python 是机器学习最常用的编程语言", metadata={"topic": "python", "ml": True}),
+        Document(page_content="Python 简单易用", metadata={"topic": "python", "ml": True}),
         Document(page_content="Java 也可以用于机器学习，如 Deeplearning4j", metadata={"topic": "java", "ml": True}),
     ]
     return InMemoryVectorStore.from_documents(documents, embeddings)
@@ -61,6 +62,7 @@ def demo_similarity():
 
     retriever = vs.as_retriever(search_type="similarity", search_kwargs={"k": 3})
     results = retriever.invoke("Python 编程")
+    print("similarity 结果:")
     for i, doc in enumerate(results):
         print(f"  [{i+1}] {doc.page_content}")
         print(f"       metadata: {doc.metadata}")
@@ -167,7 +169,12 @@ def demo_score_threshold():
     注意：InMemoryVectorStore 不支持此模式（NotImplementedError）。
     FAISS 和 Chroma 支持。
 
-    这里用 FAISS 演示。
+    score 含义（基于源码 _select_relevance_score_fn）：
+      FAISS 默认 EUCLIDEAN_DISTANCE，通过 _euclidean_relevance_score_fn
+        转为 1.0 - distance / sqrt(2)，输出 0~1 相似度分数（越大越相似）
+      Chroma 默认 cosine，通过 _cosine_relevance_score_fn
+        转为 1.0 - distance，输出 0~1 相似度分数（越大越相似）
+    所以两者的 score_threshold 都是 0~1 范围的相似度，越大越相似。
     """
     try:
         from langchain_community.vectorstores import FAISS
@@ -186,10 +193,10 @@ def demo_score_threshold():
     vs = FAISS.from_texts(texts, embeddings)
 
     print("=== demo_4: similarity_score_threshold ===")
+    print("注意：score_threshold 是 0~1 相似度分数，越大越相似\n")
 
-    # FAISS 的分数是 L2 距离（越小越相似），阈值也是距离
     query = "可爱的动物"
-    for threshold in [0.5, 1.0, 2.0]:
+    for threshold in [0.5, 0.7, 0.9]:
         retriever = vs.as_retriever(
             search_type="similarity_score_threshold",
             search_kwargs={"k": 5, "score_threshold": threshold},
@@ -201,8 +208,8 @@ def demo_score_threshold():
         print()
 
     print("--- 观察 ---")
-    print("阈值越小 → 过滤越严格 → 返回越少（但质量越高）")
-    print("阈值越大 → 过滤越宽松 → 返回越多（可能混入不相关的）")
+    print("阈值越大 → 过滤越严格 → 返回越少（但质量越高）")
+    print("阈值越小 → 过滤越宽松 → 返回越多（可能混入不相关的）")
 
     print()
 
