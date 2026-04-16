@@ -203,7 +203,7 @@ class RAGEngine:
         Args:
             docs: retriever 返回的 Document 列表
         """
-        print(f"\n🔍 检索到 {len(docs)} 条相关文档：")
+        print(f"\n🔍 检索到 {len(docs)} 条文档（按相似度排序，不一定都相关）：")
         for i, doc in enumerate(docs):
             print(f"  [{i+1}] 来源: {doc.metadata.get('source_file', '未知')}")
             print(f"     内容: {doc.page_content[:100]}...\n")
