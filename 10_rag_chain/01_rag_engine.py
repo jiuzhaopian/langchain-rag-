@@ -299,6 +299,12 @@ class RAGEngine:
         )
         docs = retriever.invoke(query)
 
+        # 打印检索结果（方便调试和教学观察）
+        print(f"\n🔍 检索到 {len(docs)} 条相关文档：")
+        for i, doc in enumerate(docs):
+            print(f"  [{i+1}] 来源: {doc.metadata.get('source_file', '未知')}")
+            print(f"     内容: {doc.page_content[:100]}...\n")
+
         # 2. 人工格式化检索结果
         context = "\n\n".join(
             f"[来源: {d.metadata.get('source_file', '未知')}]\n{d.page_content}"
@@ -339,6 +345,18 @@ class RAGEngine:
         Yields:
             str: LLM 生成的 token 片段
         """
+        # 先调用 retriever 打印检索结果（chat_stream 的 chain 是黑盒，
+        # 这里单独调一次 retriever 方便观察）
+        retriever = self.doc_manager.get_retriever(
+            k=k, search_type=search_type,
+            score_threshold=score_threshold, mmr_lambda=mmr_lambda,
+        )
+        docs = retriever.invoke(query)
+        print(f"\n🔍 检索到 {len(docs)} 条相关文档：")
+        for i, doc in enumerate(docs):
+            print(f"  [{i+1}] 来源: {doc.metadata.get('source_file', '未知')}")
+            print(f"     内容: {doc.page_content[:100]}...\n")
+
         chain = self._build_chain(
             query, history, k, search_type, score_threshold, mmr_lambda,
         )
