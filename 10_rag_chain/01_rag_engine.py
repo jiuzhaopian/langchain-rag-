@@ -270,9 +270,16 @@ class RAGEngine:
         mmr_lambda: float = 0.5,
     ) -> str:
         """
-        执行一次 RAG 对话（非流式）
+        执行一次 RAG 对话（非流式，手动控制每一步）
 
-        流程：retriever → context → prompt → LLM → StrOutputParser
+        适合教学演示：人工调用 retriever、手动拼装 context 和历史，
+        chain 中只有 3 个节点：prompt → llm → parser。
+
+        流程：
+          1. 人工调用 retriever 检索相关文档
+          2. 人工将检索结果格式化为 context 文本
+          3. 人工将历史对话构建为 Message 列表
+          4. 组装 chain（prompt | llm | parser）并执行
 
         Args:
             query: 用户问题
@@ -285,10 +292,31 @@ class RAGEngine:
         Returns:
             LLM 生成的回答（完整字符串）
         """
-        chain = self._build_chain(
-            query, history, k, search_type, score_threshold, mmr_lambda,
+        # 1. 人工调用 retriever 检索（09 Retriever）
+        retriever = self.doc_manager.get_retriever(
+            k=k, search_type=search_type,
+            score_threshold=score_threshold, mmr_lambda=mmr_lambda,
         )
-        return chain.invoke(query)
+        docs = retriever.invoke(query)
+
+        # 2. 人工格式化检索结果
+        context = "\n\n".join(
+            f"[来源: {d.metadata.get('source_file', '未知')}]\n{d.page_content}"
+            for d in docs
+        )
+
+        # 3. 人工构建历史消息（02 Messages）
+        history_messages = self._build_history_messages(history)
+
+        # 4. chain 只有 3 个节点：prompt → llm → parser（05 + 06）
+        chain = self._prompt | self.llm | self._parser
+        response = chain.invoke({
+            "context": context,
+            "history": history_messages,
+            "question": query,
+        })
+
+        return response
 
     def chat_stream(
         self,
@@ -300,10 +328,13 @@ class RAGEngine:
         mmr_lambda: float = 0.5,
     ):
         """
-        执行一次 RAG 对话（流式输出）
+        执行一次 RAG 对话（流式输出，全流程 Chain）
 
-        与 chat() 流程相同，但使用 .stream() 逐 token 输出，
-        适合 Streamlit st.write_stream() 等流式场景。
+        与 chat() 不同，这里把 retriever、history 构建等都放进 chain，
+        形成完整的 pipeline：retriever → format_docs → prompt → llm → parser。
+        对应知识点：06 Chains（RunnablePassthrough + RunnableParallel）
+
+        适合实际开发：一个 chain 搞定所有步骤，用 .stream() 逐 token 输出。
 
         Yields:
             str: LLM 生成的 token 片段
