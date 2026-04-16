@@ -28,15 +28,14 @@ def get_embeddings():
     return OllamaEmbeddings(model="bge-m3")
 
 
-# Chroma collection 元数据：显式指定 cosine 距离
-# bge-m3 输出归一化向量，Chroma 默认用 L2 距离
+# Chroma 距离度量：显式指定 cosine
 #
-# 为什么不直接用默认的 L2？
-# - 归一化向量下 L2 和 cosine 排序等价（L2² = 2(1-cos)），TopK 结果一模一样
-# - 但分数值不同：cosine 下分数 = 余弦相似度（如 0.6），直观易懂
-# - L2 下经 _euclidean_relevance_score_fn 转换后分数被非线性压缩（如 0.37），
-#   学员看到"相关文档才 0.37 分"会产生困惑
-# - 指定 cosine 让分数即可解释又好看
+# bge-m3（以及 OpenAI、DashScope 等主流模型）输出的向量是归一化的（模长=1）。
+# 归一化向量下 L2 和 cosine 排序完全等价（L2² = 2(1-cos)），TopK 结果一模一样，
+# 但分数值不同：
+#   cosine 下：分数 = 余弦相似度（如 0.6），直观易懂
+#   L2 下：经公式转换后分数被压缩（如 0.37），"相关文档才 0.37" 容易困惑
+# 因此显式指定 cosine，让分数即可解释、又好看。
 CHROMA_COLLECTION_METADATA = {"hnsw:space": "cosine"}
 
 

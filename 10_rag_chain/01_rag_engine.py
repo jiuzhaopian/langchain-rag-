@@ -66,7 +66,7 @@ class DocumentManager:
         )
 
         # 初始化 Chroma（已有数据自动加载）
-        # 显式指定 cosine 距离（归一化向量下 L2/cosine 排序等价，此处仅为语义清晰）
+        # 显式指定 cosine 距离（详细说明见 CHROMA_COLLECTION_METADATA 定义处）
         self.vectorstore = Chroma(
             persist_directory=str(self.persist_dir),
             embedding_function=self.embeddings,
