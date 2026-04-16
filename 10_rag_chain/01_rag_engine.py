@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Optional
 
 from langchain_core.documents import Document
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, MessagesPlaceholder
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
@@ -189,10 +189,22 @@ class RAGEngine:
                 "如果文档中没有相关信息，请明确告知「检索到的文档中未找到相关信息」，不要编造。"
             )),
             ("system", "检索到的文档：\n{context}"),
-            ("placeholder", "{history}"),  # 历史消息直接插入
+            MessagesPlaceholder("history"),  # 历史消息直接插入
             ("human", "{question}"),
         ])
         self._parser = StrOutputParser()
+
+    def _print_retrieved_docs(self, docs: list):
+        """
+        打印检索到的文档（用于调试和教学观察）
+
+        Args:
+            docs: retriever 返回的 Document 列表
+        """
+        print(f"\n🔍 检索到 {len(docs)} 条相关文档：")
+        for i, doc in enumerate(docs):
+            print(f"  [{i+1}] 来源: {doc.metadata.get('source_file', '未知')}")
+            print(f"     内容: {doc.page_content[:100]}...\n")
 
     def _build_history_messages(self, history: list[dict]) -> list:
         """
@@ -231,7 +243,8 @@ class RAGEngine:
         """
         retriever = self.doc_manager.get_retriever(
             k=k, search_type=search_type,
-            score_threshold=score_threshold, mmr_lambda=mmr_lambda,
+            score_threshold=score_threshold,
+            mmr_lambda=mmr_lambda,
         )
 
         def format_docs(docs):
@@ -299,11 +312,8 @@ class RAGEngine:
         )
         docs = retriever.invoke(query)
 
-        # 打印检索结果（方便调试和教学观察）
-        print(f"\n🔍 检索到 {len(docs)} 条相关文档：")
-        for i, doc in enumerate(docs):
-            print(f"  [{i+1}] 来源: {doc.metadata.get('source_file', '未知')}")
-            print(f"     内容: {doc.page_content[:100]}...\n")
+        # 打印检索结果
+        self._print_retrieved_docs(docs)
 
         # 2. 人工格式化检索结果
         context = "\n\n".join(
@@ -352,10 +362,9 @@ class RAGEngine:
             score_threshold=score_threshold, mmr_lambda=mmr_lambda,
         )
         docs = retriever.invoke(query)
-        print(f"\n🔍 检索到 {len(docs)} 条相关文档：")
-        for i, doc in enumerate(docs):
-            print(f"  [{i+1}] 来源: {doc.metadata.get('source_file', '未知')}")
-            print(f"     内容: {doc.page_content[:100]}...\n")
+
+        # 打印检索结果
+        self._print_retrieved_docs(docs)
 
         chain = self._build_chain(
             query, history, k, search_type, score_threshold, mmr_lambda,
