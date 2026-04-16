@@ -7,8 +7,10 @@
   - RAGEngine.chat(): 05_output_parsers + 06_chains + 09_retriever
 
 参考文档：
-  - Chroma: https://reference.langchain.com/python/langchain-chroma/vectorstores/Chroma
-  - ChatPromptTemplate: https://reference.langchain.com/python/langchain-core/prompts/ChatPromptTemplate
+  - Chroma: https://reference.langchain.com/python/langchain-chroma/Chroma
+  - ChatPromptTemplate: https://reference.langchain.com/python/langchain-core/ChatPromptTemplate
+  - RunnableParallel: https://reference.langchain.com/python/langchain-core/runnables/RunnableParallel
+  - RunnablePassthrough: https://reference.langchain.com/python/langchain-core/runnables/passthrough/RunnablePassthrough
 """
 
 from pathlib import Path
@@ -247,7 +249,9 @@ class RAGEngine:
         )
 
         def format_docs(docs):
+            # 打印输出
             self._print_retrieved_docs(docs)
+            # 返回format 结果
             return "\n\n".join(
                 f"[来源: {d.metadata.get('source_file', '未知')}]\n{d.page_content}"
                 for d in docs
