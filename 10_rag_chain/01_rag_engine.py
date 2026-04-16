@@ -6,16 +6,11 @@
   - DocumentManager.process_file(): 07_document_loaders + 08_text_splitters + 09_vectorstore_retriever
   - RAGEngine.chat(): 05_output_parsers + 06_chains + 09_retriever
 
-# 动态导入配置（数字前缀的模块无法直接 from import）
-# 00_rag_config.py: 全局配置（模型、向量库、切分、检索参数）
-# 01_rag_engine.py: 核心引擎（DocumentManager + RAGEngine）
-# 02_streamlit_app.py: Streamlit UI（文档管理 + RAG 对话）
-import sys as _sys
-_module_dir = Path(__file__).parent
-_sys.path.insert(0, str(_module_dir))
-import importlib as _importlib
-_config = _importlib.import_module("00_rag_config")
-
+参考文档：
+  - ChatPromptTemplate: https://reference.langchain.com/python/langchain-core/prompts/chat/ChatPromptTemplate
+  - MessagesPlaceholder: https://reference.langchain.com/python/langchain-core/prompts/chat/MessagesPlaceholder
+  - RunnableParallel: https://reference.langchain.com/python/langchain-core/runnables/base/RunnableParallel
+  - RunnablePassthrough: https://reference.langchain.com/python/langchain-core/runnables/passthrough/RunnablePassthrough
 """
 
 from pathlib import Path
@@ -32,6 +27,10 @@ from langchain_community.document_loaders import (
     UnstructuredMarkdownLoader,
 )
 
+# 动态导入配置（数字前缀的模块无法直接 from import）
+# 00_rag_config.py: 全局配置（模型、向量库、切分、检索参数）
+# 01_rag_engine.py: 核心引擎（DocumentManager + RAGEngine）
+# 02_streamlit_app.py: Streamlit UI（文档管理 + RAG 对话）
 import sys as _sys
 _module_dir = Path(__file__).parent
 _sys.path.insert(0, str(_module_dir))
