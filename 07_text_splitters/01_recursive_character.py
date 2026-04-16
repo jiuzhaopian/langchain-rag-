@@ -59,7 +59,7 @@ def demo_split_text():
     print("=== 演示 1：split_text（纯文本切分） ===")
 
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=100,       # 每个块的最大字符数
+        chunk_size=100, chunk_overlap=0,
     )
 
     chunks = splitter.split_text(SAMPLE_TEXT)
@@ -80,7 +80,7 @@ def demo_create_documents():
     """
     print("\n\n=== 演示 2：create_documents（带 metadata） ===")
 
-    splitter = RecursiveCharacterTextSplitter(chunk_size=100)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=100, chunk_overlap=0)
 
     docs = splitter.create_documents(
         texts=[SAMPLE_TEXT],
@@ -102,7 +102,7 @@ def demo_split_documents():
     """
     print("\n\n=== 演示 3：split_documents（保留 metadata） ===")
 
-    splitter = RecursiveCharacterTextSplitter(chunk_size=100)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=100, chunk_overlap=0)
 
     # 模拟从 Loader 加载的 Document
     docs_in = [
