@@ -15,8 +15,8 @@ from pathlib import Path
 from typing import Optional
 
 from langchain_core.documents import Document
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, MessagesPlaceholder
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 from langchain_chroma import Chroma
@@ -285,7 +285,7 @@ class RAGEngine:
         """
         执行一次 RAG 对话（非流式，手动控制每一步）
 
-        适合教学演示：人工调用 retriever、手动拼装 context 和历史，
+        人工调用 retriever、手动拼装 context 和历史，
         chain 中只有 3 个节点：prompt → llm → parser。
 
         流程：
