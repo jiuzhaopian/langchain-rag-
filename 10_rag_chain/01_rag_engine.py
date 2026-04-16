@@ -172,8 +172,7 @@ class RAGEngine:
     对应知识点：05 Output Parsers + 06 Chains + 09 Retriever
     """
 
-    def __init__(self, doc_manager: DocumentManager, llm,
-                 max_history_rounds: int = None):
+    def __init__(self, doc_manager: DocumentManager, llm,max_history_rounds: int = None):
         self.doc_manager = doc_manager
         self.llm = llm
         # 历史轮数：优先用参数，否则从配置读取
@@ -307,8 +306,10 @@ class RAGEngine:
         """
         # 1. 人工调用 retriever 检索（09 Retriever）
         retriever = self.doc_manager.get_retriever(
-            k=k, search_type=search_type,
-            score_threshold=score_threshold, mmr_lambda=mmr_lambda,
+            k=k,
+            search_type=search_type,
+            score_threshold=score_threshold,
+            mmr_lambda=mmr_lambda,
         )
         docs = retriever.invoke(query)
 
@@ -352,20 +353,12 @@ class RAGEngine:
 
         适合实际开发：一个 chain 搞定所有步骤，用 .stream() 逐 token 输出。
 
+        注意：本方法不打印检索结果（chain 是黑盒），如需观察检索结果，
+        请使用 chat() 方法（手动控制每一步）。
+
         Yields:
             str: LLM 生成的 token 片段
         """
-        # 先调用 retriever 打印检索结果（chat_stream 的 chain 是黑盒，
-        # 这里单独调一次 retriever 方便观察）
-        retriever = self.doc_manager.get_retriever(
-            k=k, search_type=search_type,
-            score_threshold=score_threshold, mmr_lambda=mmr_lambda,
-        )
-        docs = retriever.invoke(query)
-
-        # 打印检索结果
-        self._print_retrieved_docs(docs)
-
         chain = self._build_chain(
             query, history, k, search_type, score_threshold, mmr_lambda,
         )
