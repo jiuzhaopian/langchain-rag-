@@ -6,7 +6,7 @@
 """
 
 from pathlib import Path
-from langchain_community.embeddings import OllamaEmbeddings
+from langchain_ollama.embeddings import OllamaEmbeddings
 from langchain_community.chat_models import ChatZhipuAI
 
 # ============================================================
@@ -45,21 +45,24 @@ DEFAULT_SCORE_THRESHOLD = 0.5  # search_type=similarity_score_threshold 时生�
 DEFAULT_MMR_LAMBDA = 0.5  # search_type=mmr 时生效
 
 # ============================================================
-# Prompt 模板
+# 对话配置
 # ============================================================
 
-RAG_PROMPT_TEMPLATE = """基于以下检索到的文档内容回答用户的问题。
-如果文档中没有相关信息，请明确告知「检索到的文档中未找到相关信息」，不要编造。
+DEFAULT_MAX_HISTORY_ROUNDS = 50  # 保留最近 N 轮对话历史
 
-检索到的文档：
-{context}
+# ============================================================
+# Chroma 向量库配置
+# ============================================================
 
-历史对话：
-{history}
+CHROMA_COLLECTION_NAME = "rag_docs"
 
-用户问题：{question}
-
-请用中文回答："""
+# bge-m3（以及 OpenAI、DashScope 等主流模型）输出的向量是归一化的（模长=1）。
+# 归一化向量下 L2 和 cosine 排序完全等价（L2² = 2(1-cos)），TopK 结果一模一样，
+# 但分数值不同：
+#   cosine 下：分数 = 余弦相似度（如 0.6），直观易懂
+#   L2 下：经公式转换后分数被压缩（如 0.37），"相关文档才 0.37" 容易困惑
+# 因此显式指定 cosine，让分数即可解释、又好看。
+CHROMA_COLLECTION_METADATA = {"hnsw:space": "cosine"}
 
 
 # ============================================================

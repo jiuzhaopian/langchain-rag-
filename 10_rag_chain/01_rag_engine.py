@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Optional
 
 from langchain_core.documents import Document
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
@@ -27,8 +28,11 @@ from langchain_community.document_loaders import (
     UnstructuredMarkdownLoader,
 )
 
-from langchain_community.embeddings import OllamaEmbeddings
-from langchain_community.chat_models import ChatZhipuAI
+import sys as _sys
+_module_dir = Path(__file__).parent
+_sys.path.insert(0, str(_module_dir))
+import importlib as _importlib
+_config = _importlib.import_module("00_rag_config")
 
 
 # ============================================================
@@ -66,12 +70,17 @@ class DocumentManager:
         )
 
         # 初始化 Chroma（已有数据自动加载）
-        # 显式指定 cosine 距离（详细说明见 CHROMA_COLLECTION_METADATA 定义处）
+        from importlib import import_module
+        _module_dir = Path(__file__).parent
+        import sys
+        sys.path.insert(0, str(_module_dir))
+        _config = importlib.import_module("00_rag_config")
+
         self.vectorstore = Chroma(
             persist_directory=str(self.persist_dir),
             embedding_function=self.embeddings,
-            collection_name="rag_docs",
-            collection_metadata={"hnsw:space": "cosine"},
+            collection_name=_config.CHROMA_COLLECTION_NAME,
+            collection_metadata=_config.CHROMA_COLLECTION_METADATA,
         )
 
     def process_file(self, file_path: str) -> int:
@@ -139,8 +148,8 @@ class DocumentManager:
         self.vectorstore = Chroma(
             persist_directory=str(self.persist_dir),
             embedding_function=self.embeddings,
-            collection_name="rag_docs",
-            collection_metadata={"hnsw:space": "cosine"},
+            collection_name=_config.CHROMA_COLLECTION_NAME,
+            collection_metadata=_config.CHROMA_COLLECTION_METADATA,
         )
 
     def list_sources(self) -> list[str]:
@@ -164,30 +173,93 @@ class RAGEngine:
     对应知识点：05 Output Parsers + 06 Chains + 09 Retriever
     """
 
-    def __init__(self, doc_manager: DocumentManager, llm):
+    def __init__(self, doc_manager: DocumentManager, llm,
+                 max_history_rounds: int = None):
         self.doc_manager = doc_manager
         self.llm = llm
-        self._prompt = ChatPromptTemplate.from_template(
-            "基于以下检索到的文档内容回答用户的问题。\n"
-            "如果文档中没有相关信息，请明确告知「检索到的文档中未找到相关信息」，不要编造。\n\n"
-            "检索到的文档：\n{context}\n\n"
-            "{history_block}"
-            "用户问题：{question}\n\n"
-            "请用中文回答："
-        )
+        # 历史轮数：优先用参数，否则从配置读取
+        if max_history_rounds is None:
+            self.max_history_rounds = getattr(_config, 'DEFAULT_MAX_HISTORY_ROUNDS', 50)
+        else:
+            self.max_history_rounds = max_history_rounds
+
+        # 使用消息类型的 ChatPromptTemplate（02 Messages）
+        self._prompt = ChatPromptTemplate.from_messages([
+            SystemMessage(content=(
+                "你是一个有用的文档问答助手。基于检索到的文档内容回答用户的问题。\n"
+                "如果文档中没有相关信息，请明确告知「检索到的文档中未找到相关信息」，不要编造。"
+            )),
+            ("system", "检索到的文档：\n{context}"),
+            ("placeholder", "{history}"),  # 历史消息直接插入
+            ("human", "{question}"),
+        ])
         self._parser = StrOutputParser()
 
-    def _format_history(self, history: list[dict]) -> str:
-        """将对话历史格式化为 prompt 中的文本"""
+    def _build_history_messages(self, history: list[dict]) -> list:
+        """
+        将对话历史构建为 LangChain Message 对象列表
+
+        Args:
+            history: 对话历史 [{"role": "user/assistant", "content": "..."}]
+
+        Returns:
+            [HumanMessage, AIMessage, ...] 列表（只保留最近 N 轮）
+        """
         if not history:
-            return ""
-        lines = []
-        for msg in history[-6:]:  # 只保留最近 6 轮，控制 prompt 长度
+            return []
+        # 只保留最近 N 轮（1 轮 = 1 条 user + 1 条 assistant）
+        recent = history[-self.max_history_rounds * 2:]
+        messages = []
+        for msg in recent:
             role = msg.get("role", "user")
             content = msg.get("content", "")
-            label = "用户" if role == "user" else "助手"
-            lines.append(f"{label}：{content}")
-        return "历史对话：\n" + "\n".join(lines) + "\n\n"
+            if role == "user":
+                messages.append(HumanMessage(content=content))
+            elif role == "assistant":
+                messages.append(AIMessage(content=content))
+        return messages
+
+    def _build_chain(self, query: str, history: list[dict],
+                      k: int, search_type: str,
+                      score_threshold: float, mmr_lambda: float):
+        """
+        构建完整的 RAG Chain：retriever → 格式化 context → prompt → LLM → parser
+
+        对应知识点：06 Chains（RunnablePassthrough + RunnableParallel）+ 09 Retriever
+
+        Returns:
+            构建好的 chain（未执行）
+        """
+        retriever = self.doc_manager.get_retriever(
+            k=k, search_type=search_type,
+            score_threshold=score_threshold, mmr_lambda=mmr_lambda,
+        )
+
+        def format_docs(docs):
+            return "\n\n".join(
+                f"[来源: {d.metadata.get('source_file', '未知')}]\n{d.page_content}"
+                for d in docs
+            )
+
+        history_messages = self._build_history_messages(history)
+
+        # 组装 chain：retriever → context 格式化 → prompt + LLM → parser
+        # （06 Chains: RunnablePassthrough 透传 question）
+        chain = (
+            RunnableParallel(
+                context=retriever | format_docs,
+                question=RunnablePassthrough(),
+            )
+            | (lambda inputs: {
+                "context": inputs["context"],
+                "history": history_messages,
+                "question": inputs["question"],
+            })
+            | self._prompt
+            | self.llm
+            | self._parser
+        )
+        return chain
 
     def chat(
         self,
@@ -199,12 +271,9 @@ class RAGEngine:
         mmr_lambda: float = 0.5,
     ) -> str:
         """
-        执行一次 RAG 对话
+        执行一次 RAG 对话（非流式）
 
-        流程：
-          1. 用 retriever 检索相关文档
-          2. 将检索结果 + 历史对话 + 用户问题组装成 prompt
-          3. 调用 LLM 生成回答
+        流程：retriever → context → prompt → LLM → StrOutputParser
 
         Args:
             query: 用户问题
@@ -215,32 +284,33 @@ class RAGEngine:
             mmr_lambda: MMR 多样性参数
 
         Returns:
-            LLM 生成的回答
+            LLM 生成的回答（完整字符串）
         """
-        # 获取检索器（参数可动态调整）
-        retriever = self.doc_manager.get_retriever(
-            k=k,
-            search_type=search_type,
-            score_threshold=score_threshold,
-            mmr_lambda=mmr_lambda,
+        chain = self._build_chain(
+            query, history, k, search_type, score_threshold, mmr_lambda,
         )
+        return chain.invoke(query)
 
-        # 检索相关文档
-        docs = retriever.invoke(query)
-        context = "\n\n".join(
-            f"[来源: {d.metadata.get('source_file', '未知')}]\n{d.page_content}"
-            for d in docs
+    def chat_stream(
+        self,
+        query: str,
+        history: list[dict],
+        k: int = 3,
+        search_type: str = "similarity",
+        score_threshold: float = 0.5,
+        mmr_lambda: float = 0.5,
+    ):
+        """
+        执行一次 RAG 对话（流式输出）
+
+        与 chat() 流程相同，但使用 .stream() 逐 token 输出，
+        适合 Streamlit st.write_stream() 等流式场景。
+
+        Yields:
+            str: LLM 生成的 token 片段
+        """
+        chain = self._build_chain(
+            query, history, k, search_type, score_threshold, mmr_lambda,
         )
-
-        # 格式化历史
-        history_block = self._format_history(history)
-
-        # 组装 chain 并执行（06 Chains + 05 Output Parsers）
-        chain = self._prompt | self.llm | self._parser
-        response = chain.invoke({
-            "context": context,
-            "history_block": history_block,
-            "question": query,
-        })
-
-        return response
+        for token in chain.stream(query):
+            yield token

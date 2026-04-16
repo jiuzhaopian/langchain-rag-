@@ -105,6 +105,10 @@ with st.sidebar:
         disabled=(search_type != "mmr"),
     )
 
+    st.divider()
+    st.subheader("💬 对话设置")
+    stream_mode = st.checkbox("流式输出", value=True)
+
 # ============================================================
 # 页面 1：文档管理
 # ============================================================
@@ -214,20 +218,27 @@ elif page == "💬 RAG 对话":
         st.session_state.messages.append({"role": "user", "content": prompt})
 
         # 调用 RAG 引擎
-        with st.spinner("检索中..."):
+        chat_kwargs = dict(
+            query=prompt,
+            history=st.session_state.messages[:-1],  # 不含当前消息
+            k=k,
+            search_type=search_type,
+            score_threshold=score_threshold,
+            mmr_lambda=mmr_lambda,
+        )
+
+        with st.chat_message("assistant"):
             try:
-                response = rag_engine.chat(
-                    query=prompt,
-                    history=st.session_state.messages[:-1],  # 不含当前消息
-                    k=k,
-                    search_type=search_type,
-                    score_threshold=score_threshold,
-                    mmr_lambda=mmr_lambda,
-                )
+                if stream_mode:
+                    # 流式输出：逐 token 显示
+                    response = st.write_stream(rag_engine.chat_stream(**chat_kwargs))
+                else:
+                    # 非流式输出：等完整回复后显示
+                    with st.spinner("检索中..."):
+                        response = rag_engine.chat(**chat_kwargs)
+                    st.markdown(response)
             except Exception as e:
                 response = f"❌ 出错了: {e}"
+                st.markdown(response)
 
-        # 显示助手回复
-        with st.chat_message("assistant"):
-            st.markdown(response)
         st.session_state.messages.append({"role": "assistant", "content": response})
