@@ -10,8 +10,8 @@ Retriever 的核心价值：
   - 多种搜索模式：similarity / MMR / similarity_score_threshold
 
 参考文档：
-  - Retriever 接口: https://reference.langchain.com/python/langchain-core/retrievers/langchain_core.retrievers.BaseRetriever
-  - VectorStore 基类: https://reference.langchain.com/python/langchain-core/vectorstores/langchain_core.vectorstores.VectorStore
+  - Retriever 接口: https://reference.langchain.com/python/langchain-core/retrievers/BaseRetriever
+  - VectorStore 基类: https://reference.langchain.com/python/langchain-core/vectorstores/base/VectorStore
 
 安装：
   pip install langchain-core langchain-ollama
