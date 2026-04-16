@@ -7,16 +7,13 @@
   - RAGEngine.chat(): 05_output_parsers + 06_chains + 09_retriever
 
 参考文档：
-  - Chroma: https://reference.langchain.com/python/langchain-chroma/Chroma
-  - ChatPromptTemplate: https://reference.langchain.com/python/langchain-core/ChatPromptTemplate
+  - ChatPromptTemplate: https://reference.langchain.com/python/langchain-core/prompts/chat/ChatPromptTemplate
+  - MessagesPlaceholder: https://reference.langchain.com/python/langchain-core/prompts/messages_placeholder/
   - RunnableParallel: https://reference.langchain.com/python/langchain-core/runnables/RunnableParallel
   - RunnablePassthrough: https://reference.langchain.com/python/langchain-core/runnables/passthrough/RunnablePassthrough
 """
 
 from pathlib import Path
-from typing import Optional
-
-from langchain_core.documents import Document
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
