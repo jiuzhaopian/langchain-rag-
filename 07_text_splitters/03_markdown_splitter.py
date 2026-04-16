@@ -15,8 +15,9 @@ MarkdownHeaderTextSplitter 拆分规则（源码逻辑）：
 
 MarkdownTextSplitter 拆分规则：
   本质上是 RecursiveCharacterTextSplitter 的子类，默认分隔符为
-  ["\n\n", "\n", " ", ""]，即先按空行（段落）切，再按换行（行）切，
-  再按空格（单词）切，最后逐字符切。同时受 chunk_size 限制。
+  ["\n#{1,6} ", "```\n", "\n\\*\\*\\*+\n", "\n---+\n", "\n___+\n", "\n\n", "\n", " ", ""]，
+  即先按 Markdown 标题切，再按代码块结束、水平线（***/---/___）、段落、换行、空格切。
+  同时受 chunk_size 限制。注意分隔符被 is_separator_regex=True 作为正则匹配。
 
 参考文档：
   - MarkdownHeaderTextSplitter: https://reference.langchain.com/python/langchain-text-splitters/markdown/MarkdownHeaderTextSplitter
