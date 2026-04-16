@@ -28,6 +28,11 @@ def get_embeddings():
     return OllamaEmbeddings(model="bge-m3")
 
 
+# Chroma collection 元数据：bge-m3 输出归一化向量，必须用 cosine 距离
+# （Chroma 默认 L2，对归一化向量语义检索不准确）
+CHROMA_COLLECTION_METADATA = {"hnsw:space": "cosine"}
+
+
 # ============================================================
 # 演示 1：基本创建和搜索
 # ============================================================
@@ -45,7 +50,7 @@ def demo_basic():
         "机器学习是人工智能的一个分支",
         "深度学习是机器学习的子领域",
     ]
-    vectorstore = Chroma.from_texts(texts, embeddings)
+    vectorstore = Chroma.from_texts(texts, embeddings, collection_metadata=CHROMA_COLLECTION_METADATA)
 
     print("=== demo_1: Chroma 基本搜索 ===")
     print(f"存入 {len(texts)} 条文本\n")
@@ -83,7 +88,7 @@ def demo_metadata_filter():
         Document(page_content="Python 机器学习", metadata={"lang": "python", "level": "advanced"}),
     ]
 
-    vectorstore = Chroma.from_documents(documents, embeddings)
+    vectorstore = Chroma.from_documents(documents, embeddings, collection_metadata=CHROMA_COLLECTION_METADATA)
 
     print("=== demo_2: metadata 过滤 ===")
 
@@ -134,14 +139,15 @@ def demo_persistence():
     persist_dir = tempfile.mkdtemp()
 
     # 创建并持久化
-    vs1 = Chroma.from_texts(texts, embeddings, persist_directory=persist_dir)
+    vs1 = Chroma.from_texts(texts, embeddings, persist_directory=persist_dir,
+                                 collection_metadata=CHROMA_COLLECTION_METADATA)
     print("=== demo_3: 持久化 ===")
     print(f"创建: {len(texts)} 条文档")
     print(f"保存目录: {persist_dir}")
     print(f"目录内容: {os.listdir(persist_dir)}\n")
 
     # 加载已有集合
-    vs2 = Chroma(persist_directory=persist_dir, embedding_function=embeddings)
+    vs2 = Chroma(persist_directory=persist_dir, embedding_function=embeddings, collection_metadata=CHROMA_COLLECTION_METADATA)
     results = vs2.similarity_search("测试文档", k=2)
     print("加载后搜索 '测试文档':")
     for i, doc in enumerate(results):
@@ -176,6 +182,7 @@ def demo_add_delete():
         embeddings,
         ids=["doc_a", "doc_b"],
         persist_directory=persist_dir,
+        collection_metadata=CHROMA_COLLECTION_METADATA,
     )
 
     print("=== demo_4: 增量添加 + 删除 ===")
@@ -228,7 +235,7 @@ def demo_comparison():
 
     # Chroma
     persist_dir = tempfile.mkdtemp()
-    vs_chroma = Chroma.from_texts(texts, embeddings, persist_directory=persist_dir)
+    vs_chroma = Chroma.from_texts(texts, embeddings, persist_directory=persist_dir, collection_metadata=CHROMA_COLLECTION_METADATA)
     r_chroma = [d.page_content for d in vs_chroma.similarity_search("AI框架", k=2)]
     vs_chroma.delete_collection()
     shutil.rmtree(persist_dir)
