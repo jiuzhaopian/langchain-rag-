@@ -29,8 +29,9 @@ def get_embeddings():
 
 
 # Chroma collection 元数据：显式指定 cosine 距离
+# bge-m3 输出归一化向量，Chroma 默认用 L2 距离
 #
-# 为什么要指定 cosine？
+# 为什么不直接用默认的 L2？
 # - 归一化向量下 L2 和 cosine 排序等价（L2² = 2(1-cos)），TopK 结果一模一样
 # - 但分数值不同：cosine 下分数 = 余弦相似度（如 0.6），直观易懂
 # - L2 下经 _euclidean_relevance_score_fn 转换后分数被非线性压缩（如 0.37），
