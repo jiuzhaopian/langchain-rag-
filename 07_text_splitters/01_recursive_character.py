@@ -121,27 +121,58 @@ def demo_split_documents():
 
 
 # ============================================================
-# 演示 4：chunk_size 和 chunk_overlap 的影响
+# 演示 4：chunk_overlap 生效条件与效果对比
 # ============================================================
 
-def demo_parameters():
+def demo_overlap():
     """
-    chunk_size 和 chunk_overlap 是最关键的两个参数。
+    chunk_overlap 的作用：让相邻 chunk 之间有一段重叠文本，防止重要信息
+    被切断在两个 chunk 的边界处。
+
+    生效条件（源码 _merge_splits 逻辑）：
+      当合并后的文本超过 chunk_size 时，会从缓冲区头部逐段弹出，直到
+      总长度 <= chunk_overlap。弹出的部分被丢弃，剩余部分保留在缓冲区中，
+      作为下一个 chunk 的起始内容——这就是「重叠」。
+
+    不生效的场景：
+      如果每次合并后恰好接近 chunk_size，缓冲区里只剩一段内容，
+      弹出它后缓冲区就空了，下一个 chunk 从新段落开始，没有重叠。
+      SAMPLE_TEXT + chunk_size=100 就是这种情况（overlap=20 和 overlap=0 结果一样）。
+
+    生效的场景：
+      单段文本长度超过 chunk_size，RecursiveCharacterTextSplitter 会递归
+      用更低级的分隔符（\n → 空格 → 逐字符）继续拆分，这时 overlap 才会
+      在子切分层级产生实际重叠。
     """
-    print("\n\n=== 演示 4：参数影响对比 ===")
+    print("\n\n=== 演示 4：chunk_overlap 生效条件与效果对比 ===")
 
-    configs = [
-        (200, 0, "大块、无重叠"),
-        (100, 20, "中等、有重叠（推荐）"),
-        (50, 10, "小块、有重叠"),
-    ]
+    # 造一个长段文本（无 \n\n 分隔），迫使递归切分触发 overlap
+    LONG_TEXT = (
+        "LangChain 是一个用于构建 LLM 应用的框架，它提供了多种工具和抽象，"
+        "包括模型管理、提示词模板、链式调用和检索器等核心功能组件，"
+        "让开发者能够快速构建复杂的 AI 应用。"
+        "Python 是一种广泛使用的编程语言，以其简洁的语法和强大的生态系统而闻名，"
+        "特别适合数据处理和机器学习领域。"
+        "Java 是一种强类型的面向对象编程语言，在企业级应用开发中占据重要地位。"
+    )
 
-    for size, overlap, desc in configs:
-        splitter = RecursiveCharacterTextSplitter(chunk_size=size, chunk_overlap=overlap)
-        chunks = splitter.split_text(SAMPLE_TEXT)
-        print(f"\n{desc}: chunk_size={size}, overlap={overlap}-> {len(chunks)} 个块 \n")
-        for i,chunk in enumerate(chunks):
-            print(f"->块{i+1};大小:{len(chunk)};块内容：{chunk[:20]}....")
+    for overlap, label in [(15, "有重叠"), (0, "无重叠")]:
+        splitter = RecursiveCharacterTextSplitter(chunk_size=60, chunk_overlap=overlap)
+        chunks = splitter.split_text(LONG_TEXT)
+        print(f"\nchunk_size=60, overlap={overlap}（{label}）-> {len(chunks)} 个块:")
+        for i, chunk in enumerate(chunks):
+            print(f"  块{i+1}（{len(chunk)}字符）: {chunk}")
+            # 高亮与前一块的重叠部分
+            if i > 0 and overlap > 0:
+                prev = chunks[i - 1]
+                for j in range(min(len(chunk), len(prev)), max(0, min(len(chunk), len(prev)) - overlap - 1), -1):
+                    if prev.endswith(chunk[:j]):
+                        print(f"    ↑↑↑ 与前一块末尾重叠 {j} 字符: \"{chunk[:j]}\"")
+                        break
+
+    print("\n对比结论:")
+    print("  overlap=0: 块3 只剩 1 个字符（\"的\"），信息断裂")
+    print("  overlap=15: 块3 从重叠位置开始，语义完整（\"组件，让开发者...\"）")
 
 # ============================================================
 # 演示 5：自定义分隔符
@@ -206,6 +237,6 @@ if __name__ == "__main__":
     demo_split_text()
     demo_create_documents()
     demo_split_documents()
-    demo_parameters()
+    demo_overlap()
     demo_separators()
     demo_length_function()
