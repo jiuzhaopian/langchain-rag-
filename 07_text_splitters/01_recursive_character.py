@@ -60,11 +60,10 @@ def demo_split_text():
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=100,       # 每个块的最大字符数
-        chunk_overlap=20,     # 块之间的重叠字符数（保持上下文连贯）
     )
 
     chunks = splitter.split_text(SAMPLE_TEXT)
-    print(f"chunk_size=100, chunk_overlap=20")
+    print(f"chunk_size=100")
     print(f"切分为 {len(chunks)} 个块:")
     for i, chunk in enumerate(chunks):
         print(f"\n--- 块 {i+1}（{len(chunk)} 字符）---")
@@ -81,7 +80,7 @@ def demo_create_documents():
     """
     print("\n\n=== 演示 2：create_documents（带 metadata） ===")
 
-    splitter = RecursiveCharacterTextSplitter(chunk_size=100, chunk_overlap=20)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=100)
 
     docs = splitter.create_documents(
         texts=[SAMPLE_TEXT],
@@ -103,7 +102,7 @@ def demo_split_documents():
     """
     print("\n\n=== 演示 3：split_documents（保留 metadata） ===")
 
-    splitter = RecursiveCharacterTextSplitter(chunk_size=100, chunk_overlap=20)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=100)
 
     # 模拟从 Loader 加载的 Document
     docs_in = [
@@ -120,59 +119,59 @@ def demo_split_documents():
         print(f"  块 {i+1}: metadata={doc.metadata} ->内容长度={len(doc.page_content)}")
 
 
+
 # ============================================================
-# 演示 4：chunk_overlap 生效条件与效果对比
+# 演示 4：chunk_overlap 的作用与生效场景
 # ============================================================
 
 def demo_overlap():
     """
-    chunk_overlap 的作用：让相邻 chunk 之间有一段重叠文本，防止重要信息
-    被切断在两个 chunk 的边界处。
+    chunk_overlap 的作用：
+      当文本太长、没有现成的分隔符（如段落分隔）时，切分器会「硬切分」
+      ——在句子甚至词语中间断开。这时 overlap 就像保险带，把切开位置的
+      上下文各保留一些字，让相邻两个 chunk 在边界处有重叠，避免重要信息
+      正好被切断在两个块之间。
 
-    生效条件（源码 _merge_splits 逻辑）：
-      当合并后的文本超过 chunk_size 时，会从缓冲区头部逐段弹出，直到
-      总长度 <= chunk_overlap。弹出的部分被丢弃，剩余部分保留在缓冲区中，
-      作为下一个 chunk 的起始内容——这就是「重叠」。
+    什么时候生效：
+      文本中有大段连续内容（没有 \n\n 段落分隔），单段长度超过 chunk_size，
+      切分器被迫用空格或逐字符来切时，overlap 才会产生实际重叠。
 
-    不生效的场景：
-      如果每次合并后恰好接近 chunk_size，缓冲区里只剩一段内容，
-      弹出它后缓冲区就空了，下一个 chunk 从新段落开始，没有重叠。
-      SAMPLE_TEXT + chunk_size=100 就是这种情况（overlap=20 和 overlap=0 结果一样）。
-
-    生效的场景：
-      单段文本长度超过 chunk_size，RecursiveCharacterTextSplitter 会递归
-      用更低级的分隔符（\n → 空格 → 逐字符）继续拆分，这时 overlap 才会
-      在子切分层级产生实际重叠。
+    什么时候不生效：
+      文本有清晰的段落分隔，每段长度 < chunk_size，切分器总是能找到
+      自然断点（段落/换行）来切分，不存在「硬切分」，overlap 也就无处施展。
+      前面 demo 1-3 用的 SAMPLE_TEXT 就是这种情况（6 个短段落，
+      每两段合并 ≈ 96 字符 < chunk_size=100），所以前面都没写 overlap。
     """
-    print("\n\n=== 演示 4：chunk_overlap 生效条件与效果对比 ===")
+    print("\n\n=== 演示 4：chunk_overlap 的作用与生效场景 ===")
 
-    # 造一个长段文本（无 \n\n 分隔），迫使递归切分触发 overlap
+    # 一段没有换行的长文本——模拟现实中「一段话特别长」的场景
+    # 单段 ≈170 字符，chunk_size=80，必然触发硬切分
     LONG_TEXT = (
-        "LangChain 是一个用于构建 LLM 应用的框架，它提供了多种工具和抽象，"
-        "包括模型管理、提示词模板、链式调用和检索器等核心功能组件，"
-        "让开发者能够快速构建复杂的 AI 应用。"
-        "Python 是一种广泛使用的编程语言，以其简洁的语法和强大的生态系统而闻名，"
-        "特别适合数据处理和机器学习领域。"
-        "Java 是一种强类型的面向对象编程语言，在企业级应用开发中占据重要地位。"
+        "在自然语言处理领域，Transformer 架构通过自注意力机制实现了对文本"
+        "全局依赖关系的建模，彻底改变了传统的序列处理方式。与 RNN 不同，"
+        "Transformer 可以并行处理整个序列，大幅提升了训练效率。BERT 模型"
+        "基于 Transformer 的编码器部分，通过掩码语言模型预训练任务学习"
+        "深层语义表示，在问答、分类等下游任务中表现优异。"
     )
 
-    for overlap, label in [(15, "有重叠"), (0, "无重叠")]:
-        splitter = RecursiveCharacterTextSplitter(chunk_size=60, chunk_overlap=overlap)
+    for overlap, label in [(20, "有重叠（推荐）"), (0, "无重叠")]:
+        splitter = RecursiveCharacterTextSplitter(chunk_size=80, chunk_overlap=overlap)
         chunks = splitter.split_text(LONG_TEXT)
-        print(f"\nchunk_size=60, overlap={overlap}（{label}）-> {len(chunks)} 个块:")
+        print(f"\n--- chunk_size=80, overlap={overlap}（{label}） ---")
+        print(f"共 {len(chunks)} 个块:\n")
         for i, chunk in enumerate(chunks):
             print(f"  块{i+1}（{len(chunk)}字符）: {chunk}")
-            # 高亮与前一块的重叠部分
-            if i > 0 and overlap > 0:
+            # 标注与前一块的重叠
+            if i > 0:
                 prev = chunks[i - 1]
-                for j in range(min(len(chunk), len(prev)), max(0, min(len(chunk), len(prev)) - overlap - 1), -1):
+                for j in range(min(len(chunk), len(prev)), 0, -1):
                     if prev.endswith(chunk[:j]):
-                        print(f"    ↑↑↑ 与前一块末尾重叠 {j} 字符: \"{chunk[:j]}\"")
+                        print(f"    ↑ 与前一块重叠 {j} 字符")
                         break
 
-    print("\n对比结论:")
-    print("  overlap=0: 块3 只剩 1 个字符（\"的\"），信息断裂")
-    print("  overlap=15: 块3 从重叠位置开始，语义完整（\"组件，让开发者...\"）")
+    print("\n--- 对比总结 ---")
+    print("  overlap=0 :  块与块之间无缝连接，边界处可能正好把一句话切断")
+    print("  overlap=20: 每个块开头会重复前一个块末尾的内容，上下文不丢失")
 
 # ============================================================
 # 演示 5：自定义分隔符
