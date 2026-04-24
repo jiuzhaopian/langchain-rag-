@@ -14,12 +14,6 @@ langchain-deepseek>=0.1.0
 # 通义千问 ChatTongyi（DashScope 原生接口）
 dashscope>=1.14.0
 
-# 智谱 GLM（langchain-community 官方集成）
-# ⚠️ PyPDFLoader/PyMuPDFLoader 的 extract_images 存在已知 bug（langchain #34400）：
-#    空缓冲区检查在写入数据之前执行，导致所有图片被跳过。
-#    该 bug 从 extract_images 功能引入（0.3.x）至今所有版本均存在，降级无法解决。
-#    替代方案：PyPDFium2Loader/PDFPlumberLoader 不受影响，或直接用 PyMuPDF 提取。
-#    详见 07_document_loaders/extract_images_research/README.md
 langchain-community>=0.3.0
 zhipuai>=2.0.0
 

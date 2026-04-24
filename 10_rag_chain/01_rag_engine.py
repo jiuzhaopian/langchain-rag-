@@ -120,8 +120,11 @@ class DocumentManager:
 
         return len(splits)
 
-    def get_retriever(self, k: int = 3, search_type: str = "similarity",
-                      score_threshold: float = 0.5, mmr_lambda: float = 0.5):
+    def get_retriever(self,
+                      k: int = 3,
+                      search_type: str = "similarity",
+                      score_threshold: float = 0.5,
+                      mmr_lambda: float = 0.5):
         """
         获取检索器，支持动态调优参数（09 Retriever）
 
@@ -232,9 +235,12 @@ class RAGEngine:
                 messages.append(AIMessage(content=content))
         return messages
 
-    def _build_chain(self, query: str, history: list[dict],
-                      k: int, search_type: str,
-                      score_threshold: float, mmr_lambda: float):
+    def _build_chain(self,
+                     history: list[dict],
+                     k: int,
+                     search_type: str,
+                     score_threshold: float,
+                     mmr_lambda: float):
         """
         构建完整的 RAG Chain：retriever → 格式化 context → prompt → LLM → parser
 
@@ -244,7 +250,8 @@ class RAGEngine:
             构建好的 chain（未执行）
         """
         retriever = self.doc_manager.get_retriever(
-            k=k, search_type=search_type,
+            k=k,
+            search_type=search_type,
             score_threshold=score_threshold,
             mmr_lambda=mmr_lambda,
         )
@@ -267,7 +274,7 @@ class RAGEngine:
                 context=retriever | format_docs,
                 question=RunnablePassthrough(),
             )
-            | (lambda inputs: {
+            | (lambda inputs:{
                 "context": inputs["context"],
                 "history": history_messages,
                 "question": inputs["question"],
@@ -366,7 +373,7 @@ class RAGEngine:
             str: LLM 生成的 token 片段
         """
         chain = self._build_chain(
-            query, history, k, search_type, score_threshold, mmr_lambda,
+            history, k, search_type, score_threshold, mmr_lambda,
         )
         for token in chain.stream(query):
             yield token
