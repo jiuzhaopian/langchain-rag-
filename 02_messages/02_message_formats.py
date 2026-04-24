@@ -36,7 +36,7 @@ def demo_format_1_message_objects():
     适合：复杂对话、需要精确控制消息类型的场景
     """
     from langchain.messages import SystemMessage, HumanMessage # 也是从langchain_core.messages导入的
-
+    #TODO
     pass
 
 
@@ -49,6 +49,7 @@ def demo_format_2_tuples():
       ("human", "...")  → HumanMessage
       ("ai", "...")     → AIMessage
     """
+    #TODO
     pass
 
 
@@ -59,6 +60,7 @@ def demo_format_3_dict():
     方便从 OpenAI API 文档直接复制示例。
     注意：OpenAI 用 "user"，LangChain 元组用 "human"
     """
+    #TODO
     pass
 
 

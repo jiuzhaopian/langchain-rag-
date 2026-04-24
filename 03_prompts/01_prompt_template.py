@@ -31,6 +31,7 @@ def demo_basic():
     """
     最简单的 PromptTemplate：一个模板字符串 + 变量列表
     """
+    #TODO
     pass
 
 
@@ -66,6 +67,7 @@ def demo_from_template():
     """
     from_template() 自动从模板字符串中提取变量名，无需手写 input_variables
     """
+    #TODO
     pass
 
 

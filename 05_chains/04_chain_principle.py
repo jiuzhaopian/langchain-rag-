@@ -22,7 +22,7 @@ LCEL 的 | 管道符为什么能把 prompt | llm | parser 串联起来？
 #
 # 所以 a | b 的关键是让 __or__ 返回一个"链"对象，而不是单个节点。
 
-
+# TODO
 class MyRunnable:
     """顶层基类，类似 LCEL 的 Runnable。
     所有节点和链都继承它，提供统一的 invoke 方法。

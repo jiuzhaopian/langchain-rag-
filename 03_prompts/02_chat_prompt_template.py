@@ -49,6 +49,7 @@ def demo_from_messages():
     字典          {"role": "system", "content": "..."}  字典格式
     纯字符串      "你是{role}"                        默认为 human 消息
     """
+    # TODO
     pass
 
 
@@ -61,6 +62,7 @@ def demo_from_template():
     from_template() 只能创建单条 human 消息的模板。
     如果只需要一条 human 消息，这个方式最简洁。
     """
+    # TODO
     pass
 
 
@@ -80,6 +82,7 @@ def demo_output_types():
       - StringPromptValue.to_messages() 返回 [HumanMessage]（纯文本包装）
       - ChatPromptValue.to_messages()   返回原始消息列表（保留类型信息）
     """
+    # TODO
     pass
 
 
@@ -102,6 +105,7 @@ def demo_with_llm():
     ])
 
     # 用 | 串联成链：prompt → llm
+    # TODO
     pass
 
 

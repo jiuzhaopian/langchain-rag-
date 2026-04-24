@@ -53,17 +53,19 @@ def demo_parallel():
     llm = get_llm()
     
     # ---- 方式 1：显式构造 ----
+    # TODO
     pass
 
     # ---- 方式 2a：dict 在 | 右侧 ----
     # StrOutputParser 的输出（str）分发给两个分支
     print("=== 方式 2a：dict 在 | 右侧 ===")
-
+    # TODO
     pass
 
     # ---- 方式 2b：dict 在 | 左侧 ----
     # 同一个输入分发给两个不同的 prompt+llm 链
     print("=== 方式 2b：dict 在 | 左侧 ===")
+    # TODO
     pass
 
     # ---- 常见错误示范 ----
