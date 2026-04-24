@@ -49,14 +49,8 @@ def demo_basic(pdf_path):
     """
     print("=== 演示 1：PyPDFLoader 基本用法 ===")
 
-    loader = PyPDFLoader(pdf_path)
-    docs = loader.load()
-
-    print(f"PDF 共 {len(docs)} 页")
-    for i, doc in enumerate(docs):
-        content_preview = doc.page_content[:80].replace("\n", " ")
-        print(f"  第 {i+1} 页: {content_preview}...")
-        print(f"    元数据: page={doc.metadata.get('page')}, source={os.path.basename(doc.metadata.get('source', ''))}")
+    #TODO
+    pass
 
 
 # ============================================================
@@ -221,18 +215,8 @@ def demo_extract_images(pdf_path):
 
     # --- 4b: LLMImageBlobParser（智谱 glm-4.6v 多模态）---
     print("\n--- 4b: PyPDFLoader + LLMImageBlobParser（智谱 glm-4.6v）---")
-
-    loader = PyPDFLoader(
-        pdf_path,
-        extract_images=True,
-        images_parser=LLMImageBlobParser(
-            model=ChatZhipuAI(model="glm-4.6v", api_key=os.environ.get("ZHIPUAI_API_KEY"))
-        ),
-    )
-    docs = loader.load()
-    for d in docs:
-        print(f"Page {d.metadata.get('page')}:")
-        print(d.page_content)
+    # TODO
+    pass
 
 
 if __name__ == "__main__":

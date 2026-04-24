@@ -75,26 +75,8 @@ RAG = 文档加载 + 文本切分 + 向量存储 + 检索 + 生成。
 """
 
     # headers_to_split_on: 指定要识别的标题层级和对应的 metadata key
-    splitter = MarkdownHeaderTextSplitter(
-        headers_to_split_on=[
-            ("#", "h1"),
-            ("##", "h2"),
-            ("###", "h3"),
-        ],
-    )
-    docs = splitter.split_text(md_text)
-
-    print(f"切分为 {len(docs)} 个块:")
-    for i, doc in enumerate(docs):
-        content_preview = doc.page_content.replace("\n", " ")
-        print(f"\n  块 {i+1}:")
-        print(f"    metadata: {doc.metadata}")
-        print(f"    content:  {content_preview}")
-
-    print("\n特点:")
-    print("  - 每块自动附带标题层级作为 metadata（h1, h2, h3）")
-    print("  - 按标题层级切分，保持语义完整性")
-    print("  - 不受 chunk_size 限制，按文档结构切分")
+    # TODO
+    pass
 
 
 # ============================================================

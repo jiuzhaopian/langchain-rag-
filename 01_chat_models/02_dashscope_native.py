@@ -28,20 +28,7 @@ def demo_chat_tongyi():
     """
     from langchain_community.chat_models import ChatTongyi
 
-    # 初始化 - 默认模型 qwen-turbo
-    llm = ChatTongyi(
-        #model="qwen-plus",           # 可选: qwen-turbo(快速), qwen-plus(均衡), qwen-max(旗舰)
-        dashscope_api_key=os.environ.get("DASHSCOPE_API_KEY"),
-        # temperature=0.7,          # 可选参数
-    )
-
-    # invoke - 非流式调用
-    response = llm.invoke("用一句话介绍 LangChain")
-    print(response.model_dump_json(indent=2))
-    print(f"[ChatTongyi invoke] {response.content}")
-    print(f"类型: {type(response).__name__}")
-    print(f"模型: {response.response_metadata.get('model_name', 'N/A')}")
-    print(f"Token: {response.usage_metadata}")
+    pass
 
 
 if __name__ == "__main__":

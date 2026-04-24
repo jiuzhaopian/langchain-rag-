@@ -24,19 +24,7 @@ def demo_ollama():
     """
     from langchain_ollama import ChatOllama
 
-    llm = ChatOllama(
-        model="qwen3:8b",          # 本地模型名（需先 ollama pull）
-        # model="deepseek-r1:32b",  # DeepSeek R1 推理模型
-        temperature=0.7,
-        # base_url="http://localhost:11434",  # 默认值，可省略
-    )
-
-    # invoke
-    response = llm.invoke("用一句话介绍 LangChain")
-    print(response.model_dump_json(indent=2))
-    print(f"[Ollama qwen3:8b invoke] {response.content}")
-    print(f"类型: {type(response).__name__}")
-    print(f"Token: {response.usage_metadata}")
+    pass
 
 if __name__ == "__main__":
     import subprocess

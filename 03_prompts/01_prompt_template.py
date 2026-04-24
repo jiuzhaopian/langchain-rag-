@@ -31,24 +31,7 @@ def demo_basic():
     """
     最简单的 PromptTemplate：一个模板字符串 + 变量列表
     """
-    template = PromptTemplate(
-        template="请将以下英文翻译为中文：\n{english_text}",
-        input_variables=["english_text"],
-    )
-
-    # invoke 填充变量，返回 StringPromptValue
-    result = template.invoke({"english_text": "I love programming."})
-
-    print("=== 基本用法 ===")
-    print(f"模板: {template.template}")
-    print(f"变量: {template.input_variables}")
-    print(f"填充结果: {result}")
-    print(f"结果类型: {type(result).__name__}")
-    # StringPromptValue 可以直接转字符串
-    print(f"to_string(): {result.to_string()}")
-    print(f"to_messages(): {result.to_messages()}")
-    # 注意：to_messages() 会把纯文本包装成 HumanMessage
-    print()
+    pass
 
 
 # ============================================================
@@ -83,14 +66,7 @@ def demo_from_template():
     """
     from_template() 自动从模板字符串中提取变量名，无需手写 input_variables
     """
-    template = PromptTemplate.from_template(
-        "请用{language}写一个{algorithm}算法的实现。"
-    )
-
-    print("=== from_template 简写 ===")
-    print(f"自动提取的变量: {template.input_variables}")
-    print(f"填充结果: {template.invoke({'language': 'Python', 'algorithm': '快速排序'}).to_string()}")
-    print()
+    pass
 
 
 # ============================================================

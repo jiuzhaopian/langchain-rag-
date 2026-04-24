@@ -92,23 +92,7 @@ def demo_function_in_chain():
     print("=== 普通函数入链 ===")
     llm = get_llm()
 
-    def word_count(text: str) -> str:
-        """自定义处理函数：统计字符数"""
-        return f"【{text}】共计:{len(text)} 个字符"
-
-    def print_output(output):
-        """自定义处理函数:打印结果"""
-        print(output)
-        return output
-
-    # 普通函数直接放在 | 中 或者 用RunnableLambda 显示包装一下
-    chain = ChatPromptTemplate.from_messages([
-        ("human", "说一个关于{topic}的笑话,50字内"),
-    ]) | llm | StrOutputParser()| print_output | RunnableLambda(word_count) | RunnableLambda(lambda x: f"我加了新的内容,原结果:{x}")
-
-    result = chain.invoke({"topic": "程序员"})
-    print(f"invoke后最终结果: {result}")
-    print()
+    pass
 
 
 # ============================================================

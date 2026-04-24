@@ -34,20 +34,7 @@ def demo_dashscope_openai_compatible():
     """
     from langchain_openai import ChatOpenAI
 
-    llm = ChatOpenAI(
-        model="qwen-plus",                              # 模型名
-        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1/",  # DashScope 兼容端点
-        api_key=os.environ.get("DASHSCOPE_API_KEY"),     # 从环境变量读取
-        temperature=0.7,
-    )
-
-    # invoke - 非流式调用
-    response = llm.invoke("用一句话介绍 LangChain")
-    print(response.model_dump_json(indent=2))
-    print(f"[DashScope 兼容模式] {response.content}")
-    # response 是 AIMessage 对象
-    print(f"类型: {type(response).__name__}")
-    print(f"Token: {response.usage_metadata}")
+    pass
 
 
 # ============================================================
@@ -61,18 +48,7 @@ def demo_deepseek():
     """
     from langchain_openai import ChatOpenAI
 
-    llm = ChatOpenAI(
-        model="deepseek-chat",                          # DeepSeek 聊天模型
-        base_url="https://api.deepseek.com",             # DeepSeek 端点
-        api_key=os.environ.get("DEEPSEEK_API_KEY"),
-        temperature=0.7,
-    )
-
-    response = llm.invoke("用一句话介绍 LangChain")
-    print(response.model_dump_json(indent=2))
-    print(f"[DeepSeek] {response.content}")
-    print(f"类型: {type(response).__name__}")
-    print(f"Token: {response.usage_metadata}")
+    pass
 
 
 # ============================================================

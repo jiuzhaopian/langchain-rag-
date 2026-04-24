@@ -53,21 +53,14 @@ def cosine_similarity(v1: list, v2: list) -> float:
 
 def get_dashscope_embeddings():
     """方式 1：DashScope 原生端点（推荐）"""
-    return DashScopeEmbeddings(
-        model="text-embedding-v3",
-        # dashscope_api_key 不需要传，自动读 DASHSCOPE_API_KEY 环境变量
-    )
+    #TODO
+    pass
 
 
 def get_openai_compatible_embeddings():
     """方式 2：OpenAI 兼容端点"""
-    return OpenAIEmbeddings(
-        model="text-embedding-v3",
-        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1/",
-        api_key=os.environ.get("DASHSCOPE_API_KEY"),
-        # DashScope 不支持 token 数组输入，必须关掉 ctx_length 检查
-        check_embedding_ctx_length=False,
-    )
+    #TODO
+    pass
 
 
 # ============================================================

@@ -29,13 +29,7 @@ def demo_basic():
     # model = init_chat_model("gpt-4o-mini")
 
     # 方式 2：显式指定 provider（推荐，避免歧义）
-    model = init_chat_model(
-        "qwen-plus",
-        model_provider="tongyi",      # provider 名称,但支持的provider是在底层代码中写好的
-        temperature=0.7,
-    )
-    response = model.invoke("用一句话介绍 LangChain")
-    print(f"[init_chat_model + tongyi] {response.content}")
+    pass
 
 
 def demo_providers():
@@ -44,14 +38,7 @@ def demo_providers():
     """
     from langchain.chat_models import init_chat_model
 
-    # Ollama 本地模型
-    model = init_chat_model(
-        "qwen3:8b",
-        model_provider="ollama",
-        temperature=0.7,
-    )
-    response = model.invoke("用一句话介绍 LangChain")
-    print(f"[init_chat_model + ollama] {response.content}")
+    pass
 
 
 def demo_configurable():

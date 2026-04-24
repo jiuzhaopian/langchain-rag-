@@ -53,59 +53,18 @@ def demo_parallel():
     llm = get_llm()
     
     # ---- 方式 1：显式构造 ----
-    parallel = RunnableParallel(
-        chinese=ChatPromptTemplate.from_messages([
-            ("human", "用中文一句话回答：{question}")
-        ]) | llm | StrOutputParser(),
-        english=ChatPromptTemplate.from_messages([
-            ("human", "Answer in English,One sentence: {question}")
-        ]) | llm | StrOutputParser(),
-    )
-    result = parallel.invoke({"question": "什么是 Python"})
-
-    print("=== 方式 1：显式构造 RunnableParallel ===")
-    print(f"类型: {type(parallel).__name__}")
-    print(f"中文: {result['chinese']}")
-    print(f"English: {result['english']}")
-    print()
+    pass
 
     # ---- 方式 2a：dict 在 | 右侧 ----
     # StrOutputParser 的输出（str）分发给两个分支
     print("=== 方式 2a：dict 在 | 右侧 ===")
 
-    def print_result(result):
-        print(f"结果为:{result}")
-        return result
-    pipeline_right = (
-        ChatPromptTemplate.from_messages([("human", "用一句话回答：{question}")])
-        | llm
-        | StrOutputParser()
-        | RunnableLambda(print_result)
-        | {
-            "original": print_result,
-            "length": lambda x: f"共 {len(x)} 个字符",
-        }
-    )
-    result2a = pipeline_right.invoke({"question": "什么是 AI"})
-
-    print(f"原始回答: {result2a['original']}")
-    print(f"字符统计: {result2a['length']}")
-    print()
+    pass
 
     # ---- 方式 2b：dict 在 | 左侧 ----
     # 同一个输入分发给两个不同的 prompt+llm 链
     print("=== 方式 2b：dict 在 | 左侧 ===")
-    prompt1 = ChatPromptTemplate.from_messages([("human", "用中文一句话回答：{question}")])
-    prompt2 = ChatPromptTemplate.from_messages([("human", "用英文一句话回答：{question}")])
-    pipeline_left = {
-        "cn": prompt1 | llm | StrOutputParser(),
-        "en": prompt2 | llm | StrOutputParser(),
-    } | RunnableLambda(print_result)
-    result2b = pipeline_left.invoke({"question": "什么是 Python"})
-    
-    print(f"中文: {result2b['cn']}")
-    print(f"英文: {result2b['en']}")
-    print()
+    pass
 
     # ---- 常见错误示范 ----
     # wrong = {"key": llm}

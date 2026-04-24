@@ -77,15 +77,7 @@ def demo_assign():
     同时添加新字段 k（值为 fn 处理后的结果）。
 
     """
-    chain = RunnablePassthrough.assign(
-        greeting=lambda x: f"你好，{x['name']}！今年{x['age']}岁",
-    )
-
-    result = chain.invoke({"name": "张三", "age": 25})
-    print("=== RunnablePassthrough.assign ===")
-    print(f"原始字段都在: {result['name']}, {result['age']}")
-    print(f"新增字段: {result['greeting']}")
-    print()
+    pass
 
 
 def demo_rag_flow():
@@ -103,28 +95,7 @@ def demo_rag_flow():
     """
     llm = get_llm()
 
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "根据上下文回答问题。\n\n上下文：{context}"),
-        ("human", "{question}"),
-    ])
-
-    # 模拟检索器（实际项目中用 VectorStore.as_retriever()）
-    def retriever(query: str) -> str:
-        return "LangChain 是一个用于开发 LLM 应用的框架，支持链式调用、RAG、Agent 等模式。"
-
-    # 构建链
-    rag_chain = {
-        "context": retriever,              # callable 自动包装为 RunnableLambda,或者手动包装也行
-        "question": RunnablePassthrough(), # 原样透传输入
-    } | prompt | llm | StrOutputParser()
-
-    result = rag_chain.invoke("什么是 LangChain")
-
-    print("=== RAG 完整流程 ===")
-    print(f"用户问题: 什么是 LangChain")
-    print(f"检索结果: {retriever('什么是 LangChain')}")
-    print(f"最终回答: {result}")
-    print()
+    pass
 
 
 # 测试 passthrough 透传的是什么

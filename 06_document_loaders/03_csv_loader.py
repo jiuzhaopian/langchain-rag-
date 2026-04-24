@@ -59,15 +59,7 @@ def demo_csv_basic(csv_path):
     """
     print("=== 演示 1：CSVLoader 基本用法 ===")
 
-    loader = CSVLoader(csv_path)
-    docs = loader.load()
-
-    print(f"加载了 {len(docs)} 个文档（CSV 文件有 3 行数据 + 1 行表头）")
-    for doc in docs:
-        print(f"  【metadata】row:{doc.metadata.get('row', '?')}; source: {doc.metadata.get('source', 'x')}")
-        print(f"  【内容】:\n {doc.page_content}")
-
-    print(f"\n元数据字段: {list(docs[0].metadata.keys())}")
+    pass
 
 
 # ============================================================

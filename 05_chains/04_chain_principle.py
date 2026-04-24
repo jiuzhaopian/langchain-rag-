@@ -28,37 +28,12 @@ class MyRunnable:
     所有节点和链都继承它，提供统一的 invoke 方法。
     """
 
-    def invoke(self, input_data):
-        """子类必须重写这个方法，定义自己的处理逻辑"""
-        raise NotImplementedError("子类必须实现 invoke 方法")
-
-    def __or__(self, other):
-        """| 运算符：把两个 MyRunnable 串成 MySequence"""
-        return MySequence(self, other)
 
 
 class MySequence(MyRunnable):
     """处理链，类似 LCEL 的 RunnableSequence。
     每收到一个 | 就追加一个节点，执行时按顺序依次调用。
     """
-
-    def __init__(self, *nodes):
-        self.nodes = list(nodes)
-
-    def __str__(self):
-        return f"MySequence({len(self.nodes)} 个节点)"
-
-    def __or__(self, other):
-        """继续追加节点，返回自身（支持无限 |）"""
-        self.nodes.append(other)
-        return self
-
-    def invoke(self, input_data):
-        """依次执行每个节点，上一个的输出是下一个的输入"""
-        result = input_data
-        for node in self.nodes:
-            result = node.invoke(result)
-        return result
 
 
 # ============================================================

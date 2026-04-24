@@ -50,26 +50,7 @@ def demo_str_parser():
     这是 LangChain 表达式语言的核心范式。
     """
     llm = get_llm()
-    parser = StrOutputParser()
-
-    prompt = ChatPromptTemplate.from_messages([
-        ("human", "用一句话介绍 Python"),
-    ])
-
-    # 链式调用：prompt -> llm -> parser
-    chain = prompt | llm | parser
-    result = chain.invoke({})
-
-    print("=== StrOutputParser ===")
-    print(f"结果类型: {type(result)}")
-    print(f"结果内容: {result}")
-    print()
-
-    # 对比：不用 parser 时返回的是 AIMessage
-    raw = (prompt | llm).invoke({})
-    print(f"不用 parser: 返回 {type(raw).__name__}，需要用 .content 取值")
-    print(f"不用 parser .content: {raw.content}")
-    print()
+    pass
 
 
 # ============================================================

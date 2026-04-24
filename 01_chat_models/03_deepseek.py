@@ -23,22 +23,7 @@ def demo_deepseek():
     """
     from langchain_deepseek import ChatDeepSeek
 
-    # 初始化 - 支持两种模型
-    llm = ChatDeepSeek(
-        model="deepseek-chat",        # DeepSeek-V3（支持 tool calling、structured output）
-        # model="deepseek-reasoner",  # DeepSeek-R1（推理模型，不支持 tool calling）
-        temperature=0.7,
-    )
-
-    # invoke
-    response = llm.invoke("用一句话介绍 LangChain")
-
-    # 输出完整响应 JSON
-    print(response.model_dump_json(indent=2))
-    print(f"[ChatDeepSeek invoke] {response.content}")
-    print(f"类型: {type(response).__name__}")
-    print(f"模型: {response.response_metadata.get('model_name', 'N/A')}")
-    print(f"Token: {response.usage_metadata}")
+    pass
 
 
 if __name__ == "__main__":

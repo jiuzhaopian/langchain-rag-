@@ -56,19 +56,9 @@ def demo_basic():
         "机器学习是人工智能的一个分支",
         "深度学习是机器学习的子领域",
     ]
-    vectorstore = Chroma.from_texts(texts, embeddings, collection_metadata=CHROMA_COLLECTION_METADATA)
 
-    print("=== demo_1: Chroma 基本搜索 ===")
-    print(f"存入 {len(texts)} 条文本\n")
-
-    results = vectorstore.similarity_search("AI 技术", k=2)
-    for i, doc in enumerate(results):
-        print(f"  [{i+1}] {doc.page_content}")
-
-    # 清理内存集合
-    vectorstore.delete_collection()
-
-    print()
+    # TODO
+    pass
 
 
 # ============================================================
@@ -98,32 +88,8 @@ def demo_metadata_filter():
 
     print("=== demo_2: metadata 过滤 ===")
 
-    # 搜索 + 过滤
-    results = vectorstore.similarity_search(
-        "编程教程",
-        k=5,
-        filter={"lang": "python"},  # 只返回 lang=python 的文档
-    )
-    print("过滤条件: lang=python")
-    for i, doc in enumerate(results):
-        print(f"  [{i+1}] {doc.page_content} | metadata: {doc.metadata}")
-
-    print()
-
-    # 多条件过滤
-    results = vectorstore.similarity_search(
-        "进阶内容",
-        k=5,
-        filter={"level": "advanced"},
-    )
-    print("过滤条件: level=advanced")
-    for i, doc in enumerate(results):
-        print(f"  [{i+1}] {doc.page_content} | metadata: {doc.metadata}")
-
-    # 清理
-    vectorstore.delete_collection()
-
-    print()
+    #TODO
+    pass
 
 
 # ============================================================

@@ -1,3 +1,0 @@
-LangChain 是一个用于构建 LLM 应用的框架。
-它提供了多种工具和抽象，用于连接大语言模型与外部数据源。
-核心概念包括：Models、Prompts、OutputParsers、Chains、Retrievers。

@@ -22,17 +22,7 @@ def demo_stream():
     """
     from langchain_openai import ChatOpenAI
 
-    llm = ChatOpenAI(
-        model="qwen-plus",
-        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1/",
-        api_key=os.environ.get("DASHSCOPE_API_KEY"),
-        temperature=0.7,
-    )
-
-    print("=== 同步流式 stream() ===")
-    for chunk in llm.stream("写一首关于春天的五言绝句"):
-        print(chunk.content, end="", flush=True)
-    print("\n")
+    pass
 
 
 def demo_stream_ollama():

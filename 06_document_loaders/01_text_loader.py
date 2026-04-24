@@ -59,15 +59,7 @@ def demo_load_single():
     """
     print("=== 演示 1：加载单个文本文件 ===")
 
-    loader = TextLoader(os.path.join(DATA_DIR, "sample.txt"))
-    docs = loader.load()
-
-    print(f"加载了 {len(docs)} 个文档")
-    doc = docs[0]
-    print(f"类型: {type(doc).__name__}")
-    print(f"元数据: {doc.metadata}")
-    print(f"内容前 100 字符: {doc.page_content[:100]}")
-    print(f"内容长度: {len(doc.page_content)} 字符")
+    pass
 
 
 # ============================================================

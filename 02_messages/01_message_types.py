@@ -49,23 +49,7 @@ def demo_basic_messages():
 
     llm = get_llm()
 
-    # 构造消息列表
-    messages = [
-        SystemMessage(content="你是一个翻译助手，只做英译中，不解释。"),
-        HumanMessage(content="I love programming."),
-    ]
-
-    # 调用模型
-    response = llm.invoke(messages)
-
-    print("=== 基本消息流程 ===")
-    print(f"SystemMessage: 你是一个翻译助手，只做英译中，不解释。")
-    print(f"HumanMessage:  I love programming.")
-    print(f"AIMessage:     {response.content}")
-
-    # AIMessage 的完整结构
-    print(f"\n--- AIMessage 完整响应 ---")
-    print(response.model_dump_json(indent=2))
+    pass
 
 
 # ============================================================

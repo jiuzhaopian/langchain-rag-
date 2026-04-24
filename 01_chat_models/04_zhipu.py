@@ -25,24 +25,7 @@ def demo_zhipu():
     """
     from langchain_community.chat_models import ChatZhipuAI
 
-    # 初始化
-    chat = ChatZhipuAI(
-        model="glm-4.7",
-        #model="glm-4-flash",       # 免费模型
-        # model="glm-4",           # 旗舰模型
-        # model="glm-4-plus",      # 增强模型
-        temperature=0.5,
-    )
-
-    # invoke
-    response = chat.invoke("用一句话介绍 LangChain")
-
-    # 输出完整响应 JSON
-    print(response.model_dump_json(indent=2))
-    print(f"[ChatZhipuAI invoke] {response.content}")
-    print(f"类型: {type(response).__name__}")
-    print(f"模型: {response.response_metadata.get('model_name', 'N/A')}")
-    print(f"Token: {response.usage_metadata}")
+    pass
 
 
 if __name__ == "__main__":

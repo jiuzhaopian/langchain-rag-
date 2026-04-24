@@ -52,16 +52,7 @@ def demo_basic():
     """
     print("=== 演示 1：基本用法 ===")
 
-    loader = DirectoryLoader(
-        TEST_DIR,
-        glob="**/*.txt",
-        loader_cls=TextLoader,
-    )
-    docs = loader.load()
-
-    print(f"加载了 {len(docs)} 个文档:")
-    for doc in docs:
-        print(f"  [{doc.metadata['source']}] {doc.page_content[:50]}")
+    pass
 
 
 # ============================================================

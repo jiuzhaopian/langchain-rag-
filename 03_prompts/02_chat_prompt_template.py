@@ -49,31 +49,7 @@ def demo_from_messages():
     字典          {"role": "system", "content": "..."}  字典格式
     纯字符串      "你是{role}"                        默认为 human 消息
     """
-    prompt = ChatPromptTemplate.from_messages([
-        # 方式 1：元组 (最常用)
-        ("system", "你是一个{role}，请用{style}的风格回答。"),
-        # 方式 2：纯字符串（默认 human）
-        "{question}",
-        # 方式 3：Message 对象（静态内容，无变量）
-        SystemMessage(content="请保持回答简洁。{test}"),
-        # Tips：如果内容中本身就想带 {},则需要使用{{ }}
-        ("human", "装饰器长这样{{'name':'唐僧','obj':{{ 'role':'qq' }}}}"),
-    ])
-
-    result = prompt.invoke({
-        "role": "Python 导师",
-        "style": "通俗易懂",
-        "question": "什么是装饰器？",
-        "test":"测试Message中是否可以插入变量"
-    })
-
-    print("=== from_messages 基本用法 ===")
-    print(f"输入变量: {prompt.input_variables}")
-    print(f"消息模板数: {len(prompt.messages)}")
-    print(f"填充结果 (类型: {type(result).__name__}):")
-    for msg in result.to_messages():
-        print(f"  [{msg.type}] {msg.content[:80]}")
-    print()
+    pass
 
 
 # ============================================================
@@ -85,18 +61,7 @@ def demo_from_template():
     from_template() 只能创建单条 human 消息的模板。
     如果只需要一条 human 消息，这个方式最简洁。
     """
-    prompt = ChatPromptTemplate.from_template(
-        "请用{language}写一个{algorithm}算法。"
-    )
-
-    result = prompt.invoke({"language": "Python", "algorithm": "快速排序"})
-
-    print("=== from_template 快捷方式 ===")
-    print(f"输入变量: {prompt.input_variables}")
-    print(f"消息数: {len(result.to_messages())}")
-    print(f"消息类型: {result.to_messages()[0].type}")  # 一定是 "human"
-    print(f"内容: {result.to_messages()[0].content}")
-    print()
+    pass
 
 
 # ============================================================
@@ -115,21 +80,7 @@ def demo_output_types():
       - StringPromptValue.to_messages() 返回 [HumanMessage]（纯文本包装）
       - ChatPromptValue.to_messages()   返回原始消息列表（保留类型信息）
     """
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "你是翻译助手。"),
-        ("human", "翻译：{text}"),
-    ])
-
-    result = prompt.invoke({"text": "Hello World"})
-
-    print("=== ChatPromptValue 输出类型 ===")
-    print(f"类型: {type(result).__name__}")
-    messages = result.to_messages()
-    print(f"消息数: {len(messages)}")
-    for msg in messages:
-        print(f"  [{msg.type}] {msg.content}")
-    print(f"to_string(): {result.to_string()}")
-    print()
+    pass
 
 
 # ============================================================
@@ -151,18 +102,7 @@ def demo_with_llm():
     ])
 
     # 用 | 串联成链：prompt → llm
-    chain = prompt | llm
-
-    result = chain.invoke({
-        "role": "翻译专家",
-        "question": "将 'I love programming' 翻译为中文",
-    })
-
-    print("=== 与 Chat Model 链式调用 ===")
-    print(f"链: prompt | llm")
-    print(f"输入: role='翻译专家', question='将 I love programming 翻译为中文'")
-    print(f"输出 (类型: {type(result).__name__}): {result.content}")
-    print()
+    pass
 
 
 

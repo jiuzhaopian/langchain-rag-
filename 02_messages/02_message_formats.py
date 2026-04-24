@@ -37,12 +37,7 @@ def demo_format_1_message_objects():
     """
     from langchain.messages import SystemMessage, HumanMessage # 也是从langchain_core.messages导入的
 
-    messages = [
-        SystemMessage(content="你只回复一个词"),
-        HumanMessage(content="猫"),
-    ]
-    response = get_llm().invoke(messages)
-    print(f"[Message 对象] {response.content}")
+    pass
 
 
 def demo_format_2_tuples():
@@ -54,12 +49,7 @@ def demo_format_2_tuples():
       ("human", "...")  → HumanMessage
       ("ai", "...")     → AIMessage
     """
-    messages = [
-        ("system", "你只回复一个词"),
-        ("human", "猫"),
-    ]
-    response = get_llm().invoke(messages)
-    print(f"[元组列表]     {response.content}")
+    pass
 
 
 def demo_format_3_dict():
@@ -69,12 +59,7 @@ def demo_format_3_dict():
     方便从 OpenAI API 文档直接复制示例。
     注意：OpenAI 用 "user"，LangChain 元组用 "human"
     """
-    messages = [
-        {"role": "system", "content": "你只回复一个词"},
-        {"role": "user", "content": "猫"},       # 注意: "user" 不是 "human"
-    ]
-    response = get_llm().invoke(messages)
-    print(f"[字典列表]     {response.content}")
+    pass
 
 
 def demo_format_4_single_string():

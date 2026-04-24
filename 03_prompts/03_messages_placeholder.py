@@ -43,30 +43,7 @@ def demo_basic():
     MessagesPlaceholder 最常见的用法：在模板中预留一个位置，
     运行时传入一组历史消息。
     """
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "你是一个有帮助的助手。"),
-        # MessagesPlaceholder 会展开为传入的消息列表
-        MessagesPlaceholder("history"),
-        ("human", "{input}"),
-    ])
-
-    # 模拟对话历史
-    history = [
-        HumanMessage(content="我叫小明。"),
-        AIMessage(content="你好小明！有什么可以帮你的？"),
-    ]
-
-    result = prompt.invoke({
-        "history": history,
-        "input": "我叫什么名字？",
-    })
-
-    print("=== 基本用法 ===")
-    print(f"模板消息数: {len(prompt.messages)}")
-    print(f"填充后的消息数: {len(result.to_messages())}")
-    for msg in result.to_messages():
-        print(f"  [{msg.type}] {msg.content}")
-    print()
+    pass
 
 
 # ============================================================
@@ -79,34 +56,7 @@ def demo_chain():
     """
     llm = get_llm()
 
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "你是一个有帮助的助手，请记住用户告诉你的信息。"),
-        MessagesPlaceholder("history"),
-        ("human", "{input}"),
-    ])
-
-    chain = prompt | llm
-
-    # 第一轮对话
-    history = []
-    result1 = chain.invoke({"history": history, "input": "我叫小明，今年25岁。"})
-    history.extend([
-        HumanMessage(content="我叫小明，今年25岁。"),
-        result1,
-    ])
-    print(f"第一轮: 用户: 我叫小明，今年25岁。")
-    print(f"AI: {result1.content}")
-    print()
-
-    # 第二轮对话（基于历史）
-    result2 = chain.invoke({"history": history, "input": "我叫什么名字？几岁？"})
-    history.extend([
-        HumanMessage(content="我叫什么名字？几岁？"),
-        result2,
-    ])
-    print(f"第二轮: 用户: 我叫什么名字？几岁？")
-    print(f"AI: {result2.content}")
-    print()
+    pass
 
 
 # ============================================================

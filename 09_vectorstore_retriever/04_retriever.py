@@ -60,14 +60,8 @@ def demo_similarity():
     print("=== demo_1: similarity（纯相似度） ===")
     print("search_type='similarity', k=3\n")
 
-    retriever = vs.as_retriever(search_type="similarity", search_kwargs={"k": 3})
-    results = retriever.invoke("Python 编程")
-    print("similarity 结果:")
-    for i, doc in enumerate(results):
-        print(f"  [{i+1}] {doc.page_content}")
-        print(f"       metadata: {doc.metadata}")
-
-    print()
+    #TODO
+    pass
 
 
 # ============================================================
