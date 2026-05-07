@@ -1,0 +1,17 @@
+[
+  {
+    "name": "LangChain",
+    "desc": "LLM 应用开发框架",
+    "category": "AI"
+  },
+  {
+    "name": "LlamaIndex",
+    "desc": "数据索引框架",
+    "category": "AI"
+  },
+  {
+    "name": "FastAPI",
+    "desc": "Python Web 框架",
+    "category": "Web"
+  }
+]

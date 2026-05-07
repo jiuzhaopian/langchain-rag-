@@ -1,4 +1,5 @@
-"""01_string_json.py - StrOutputParser + JsonOutputParser (基础解析器)
+"""
+LangChain Output Parsers - String & JSON (基础解析器)
 
 Output Parser 用于将 LLM 的原始输出转换为结构化数据。
 最简单的两个：StrOutputParser 和 JsonOutputParser。
@@ -26,12 +27,13 @@ from langchain_core.prompts import ChatPromptTemplate
 
 def get_llm():
     """延迟加载，避免无 key 环境报错"""
-    from langchain_community.chat_models import ChatZhipuAI
+    from langchain_community.chat_models import ChatTongyi
     import os
-    return ChatZhipuAI(
-        model="glm-4.7",
-        api_key=os.environ.get("ZHIPUAI_API_KEY"),
+    llm = ChatTongyi(
+        model="qwen-plus",
+        dashscope_api_key=os.environ.get("ali_API_KEY"),
     )
+    return llm
 
 
 # ============================================================
@@ -50,8 +52,26 @@ def demo_str_parser():
     这是 LangChain 表达式语言的核心范式。
     """
     llm = get_llm()
-    #TODO
-    pass
+    parser = StrOutputParser()
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("human", "用一句话介绍 Python"),
+    ])
+
+    # 链式调用：prompt -> llm -> parser
+    chain = prompt | llm | parser
+    result = chain.invoke({})
+
+    print("=== StrOutputParser ===")
+    print(f"结果类型: {type(result)}")
+    print(f"结果内容: {result}")
+    print()
+
+    # 对比：不用 parser 时返回的是 AIMessage
+    raw = (prompt | llm).invoke({})
+    print(f"不用 parser: 返回 {type(raw).__name__}，需要用 .content 取值")
+    print(f"不用 parser .content: {raw.content}")
+    print()
 
 
 # ============================================================

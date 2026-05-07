@@ -1,0 +1,18 @@
+{
+  "frameworks": [
+    {
+      "name": "LangChain",
+      "details": {
+        "category": "AI",
+        "lang": "Python"
+      }
+    },
+    {
+      "name": "Django",
+      "details": {
+        "category": "Web",
+        "lang": "Python"
+      }
+    }
+  ]
+}

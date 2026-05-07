@@ -76,8 +76,25 @@ def demo_ollama_embeddings():
     """
     使用 OllamaEmbeddings（本地向量模型）
     """
-    # TODO
-    pass
+
+    embeddings = OllamaEmbeddings(model="bge-m3")
+
+    print("=== Ollama Embeddings（本地 bge-m3） ===")
+
+    # embed_query - 嵌入单条查询
+    query_vector = embeddings.embed_query("什么是机器学习？")
+    print(f"查询向量维度: {len(query_vector)}")
+    print(f"前 5 维: {query_vector[:5]}")
+
+    # embed_documents - 嵌入多条文档
+    documents = [
+        "LangChain 是一个用于构建 LLM 应用的框架",
+        "Python 是一门流行的编程语言",
+        "机器学习是人工智能的一个分支",
+    ]
+    doc_vectors = embeddings.embed_documents(documents)
+    print(f"\n文档向量数量: {len(doc_vectors)}")
+    print(f"每个向量维度: {len(doc_vectors[0])}")
 
 
 

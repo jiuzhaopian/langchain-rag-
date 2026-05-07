@@ -27,12 +27,18 @@ def demo_chat_tongyi():
     参考: https://python.langchain.com/docs/integrations/chat/tongyi/
     """
     from langchain_community.chat_models import ChatTongyi
-    #TODO
-    pass
-
+    llm = ChatTongyi(
+        # model = "qwen-plus"
+        dashscope_api_key=os.environ.get("ali_API_KEY"),
+    )
+    response = llm.invoke("今晚吃什么")
+    print(response.model_dump_json(indent=2))
+    print(f"[deshscope] {response.content}")
+    print(f"类型: {type(response).__name__}")
+    print(f"Token: {response.usage_metadata}")
 
 if __name__ == "__main__":
-    if not os.environ.get("DASHSCOPE_API_KEY"):
+    if not os.environ.get("ali_API_KEY"):
         print("请设置 DASHSCOPE_API_KEY 环境变量")
         print("  export DASHSCOPE_API_KEY='sk-...'")
         exit(1)

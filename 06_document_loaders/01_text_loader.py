@@ -23,6 +23,11 @@ from langchain_community.document_loaders import TextLoader
 from langchain_core.documents import Document
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+# 文件顶部加一行
+DEFAULT_ENCODING = "utf-8"
+
+# 然后所有 TextLoader 都用
+# loader = TextLoader(path, encoding=DEFAULT_ENCODING)
 
 
 # ============================================================
@@ -58,8 +63,16 @@ def demo_load_single():
     加载单个文本文件，返回一个 Document。
     """
     print("=== 演示 1：加载单个文本文件 ===")
-    # TODO
-    pass
+
+    loader = TextLoader(os.path.join(DATA_DIR, "sample.txt"),encoding=DEFAULT_ENCODING)
+    docs = loader.load()
+
+    print(f"加载了 {len(docs)} 个文档")
+    doc = docs[0]
+    print(f"类型: {type(doc).__name__}")
+    print(f"元数据: {doc.metadata}")
+    print(f"内容前 100 字符: {doc.page_content[:100]}")
+    print(f"内容长度: {len(doc.page_content)} 字符")
 
 
 # ============================================================
@@ -101,7 +114,7 @@ def demo_lazy_load():
     """
     print("\n=== 演示 3：懒加载 lazy_load ===")
 
-    loader = TextLoader(os.path.join(DATA_DIR, "sample.txt"))
+    loader = TextLoader(os.path.join(DATA_DIR, "sample.txt"),encoding=DEFAULT_ENCODING)
 
     # lazy_load 返回 Iterator[Document]
     for i, doc in enumerate(loader.lazy_load()):

@@ -42,8 +42,13 @@ from langchain_core.prompts import (
 
 def get_llm(temperature=0):
     """获取智谱 GLM 模型实例"""
-    from langchain_community.chat_models import ChatZhipuAI
-    return ChatZhipuAI(model="glm-4.7", temperature=temperature)
+    from langchain_community.chat_models import ChatTongyi
+    llm = ChatTongyi(
+        model="qwen-plus",
+        dashscope_api_key=os.environ.get("ali_API_KEY"),
+        temperature=temperature,
+    )
+    return llm
 
 
 # ============================================================
@@ -79,7 +84,7 @@ def demo_few_shot_prompt():
 
     print("=== FewShotPromptTemplate（纯文本）===")
     print(result.to_string())
-    print()
+
 
 
 
@@ -137,7 +142,7 @@ def demo_few_shot_chat():
     print(f"填充后的消息数: {len(result.to_messages())}")
     for msg in result.to_messages():
         print(f"  [{msg.type}] {msg.content}")
-    print()
+    print(result.to_string())
 
 
 # ============================================================
@@ -187,7 +192,7 @@ def demo_chain():
     print(f"=== 链式调用：反馈结构化 ===")
     print(f"反馈: 购物车页面点结算按钮没反应，试了好几次都不行。")
     print(f"结果: {result.content}")
-    print()
+
 
 
 # ============================================================
@@ -234,7 +239,7 @@ def demo_structure():
     print()
     print("--- 实际输出 ---")
     print(result.to_string())
-    print()
+
 
 
 # ============================================================
@@ -242,9 +247,9 @@ def demo_structure():
 # ============================================================
 
 if __name__ == "__main__":
-    if not os.environ.get("ZHIPUAI_API_KEY"):
-        print("请设置 ZHIPUAI_API_KEY 环境变量")
-        print("  export ZHIPUAI_API_KEY='...'")
+    if not os.environ.get("ali_API_KEY"):
+        print("请设置 ali_API_KEY 环境变量")
+        print("  export ali_API_KEY='...'")
         exit(1)
 
     demo_few_shot_prompt()

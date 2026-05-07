@@ -51,8 +51,18 @@ def demo_basic():
     loader_cls 必须指定，否则默认 UnstructuredFileLoader（需安装 unstructured）。
     """
     print("=== 演示 1：基本用法 ===")
-    # TODO
-    pass
+
+    loader = DirectoryLoader(
+        TEST_DIR,
+        glob="**/*.txt",
+        loader_cls=TextLoader,
+        loader_kwargs={"encoding": "utf-8"},
+    )
+    docs = loader.load()
+
+    print(f"加载了 {len(docs)} 个文档:")
+    for doc in docs:
+        print(f"  [{doc.metadata['source']}] {doc.page_content[:50]}")
 
 
 # ============================================================
@@ -93,6 +103,7 @@ def demo_advanced():
         TEST_DIR,
         glob="**/*.txt",
         loader_cls=TextLoader,
+        loader_kwargs={"encoding": "utf-8"},
         silent_errors=True,    # 跳过加载失败的文件
         show_progress=True,    # 显示进度条
     )
@@ -105,6 +116,7 @@ def demo_advanced():
         TEST_DIR,
         glob="**/*.txt",
         loader_cls=TextLoader,
+        loader_kwargs={"encoding": "utf-8"},
     )
     for i, doc in enumerate(loader_lazy.lazy_load()):
         print(f"  [{i}] {os.path.basename(doc.metadata['source'])}: {len(doc.page_content)} 字符")

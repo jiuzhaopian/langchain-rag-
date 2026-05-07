@@ -7,7 +7,8 @@
 
 from pathlib import Path
 from langchain_ollama.embeddings import OllamaEmbeddings
-from langchain_community.chat_models import ChatZhipuAI
+import os
+
 
 # ============================================================
 # 路径配置
@@ -20,8 +21,8 @@ CHROMA_PERSIST_DIR = Path(__file__).parent / "data" / "chroma_db"
 # 模型配置
 # ============================================================
 
-# LLM（复用智谱 glm-4.7）
-LLM_MODEL = "glm-4.7"
+# LLM（
+LLM_MODEL = "qwen3.6-plus"
 LLM_TEMPERATURE = 0.3  # RAG 场景用低温度，减少幻觉
 
 # Embedding（Ollama 本地 bge-m3）
@@ -70,12 +71,12 @@ CHROMA_COLLECTION_METADATA = {"hnsw:space": "cosine"}
 # ============================================================
 
 def get_llm():
-    """获取 LLM 实例（智谱 glm-4.7）"""
-    return ChatZhipuAI(
-        model=LLM_MODEL,
+
+    from langchain_deepseek import ChatDeepSeek
+    return ChatDeepSeek(
+        model="deepseek-chat",
         temperature=LLM_TEMPERATURE,
     )
-
 
 def get_embeddings():
     """获取 Embedding 实例（Ollama bge-m3）"""

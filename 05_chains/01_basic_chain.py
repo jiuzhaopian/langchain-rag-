@@ -7,9 +7,6 @@ LCEL（LangChain Expression Language）用 | 管道符组合 Runnable，构成�
 
 参考文档：
   - RunnableSequence: https://reference.langchain.com/python/langchain-core/runnables/base/RunnableSequence
-  - RunnableLambda: https://reference.langchain.com/python/langchain-core/runnables/base/RunnableLambda
-  - StrOutputParser: https://reference.langchain.com/python/langchain-core/output_parsers/string/StrOutputParser
-  - ChatPromptTemplate: https://reference.langchain.com/python/langchain-core/prompts/chat/ChatPromptTemplate
   - 源码: https://github.com/langchain-ai/langchain/blob/master/libs/core/langchain_core/runnables/
 
 安装：
@@ -24,13 +21,13 @@ from langchain_core.runnables import RunnableLambda
 # ========================= 模型配置 =========================
 
 def get_llm():
-    from langchain_community.chat_models import ChatZhipuAI
+    from langchain_community.chat_models import ChatTongyi
     import os
-    return ChatZhipuAI(
-        model="glm-4.7",
-        api_key=os.environ.get("ZHIPUAI_API_KEY"),
+    llm = ChatTongyi(
+        model="qwen-plus",
+        dashscope_api_key=os.environ.get("ali_API_KEY"),
     )
-
+    return llm
 
 # ============================================================
 # 演示 1：基本三段式链
@@ -86,13 +83,29 @@ def demo_function_in_chain():
 
 
     所以以下三种写法等价：
-      prompt | RunnableLambda(my_func) | llm    # 显式包装
-      prompt | my_func | llm                   # 自动包装，推荐
+      prompt | RunnableLambda(my_func) | llm    # 显式包装，推荐,避免因为版本等问题自动包装失败
+      prompt | my_func | llm                   # 自动包装
     """
     print("=== 普通函数入链 ===")
     llm = get_llm()
-    # TODO
-    pass
+
+    def word_count(text: str) -> str:
+        """自定义处理函数：统计字符数"""
+        return f"【{text}】共计:{len(text)} 个字符"
+
+    def print_output(output):
+        """自定义处理函数:打印结果"""
+        print(output)
+        return output
+
+    # 普通函数直接放在 | 中 或者 用RunnableLambda 显示包装一下
+    chain = ChatPromptTemplate.from_messages([
+        ("human", "说一个关于{topic}的笑话,50字内"),
+    ]) | llm | StrOutputParser()| print_output | RunnableLambda(word_count) | RunnableLambda(lambda x: f"我加了新的内容,原结果:{x}")
+
+    result = chain.invoke({"topic": "程序员"})
+    print(f"invoke后最终结果: {result}")
+    print()
 
 
 # ============================================================
@@ -131,6 +144,6 @@ def demo_batch_stream():
 # ============================================================
 
 if __name__ == "__main__":
-    demo_basic_chain()
+    # demo_basic_chain()
     demo_function_in_chain()
-    demo_batch_stream()
+    # demo_batch_stream()

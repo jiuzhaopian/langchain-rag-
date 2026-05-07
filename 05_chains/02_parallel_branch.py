@@ -9,8 +9,6 @@ Runnable 组合模式：
 参考文档：
   - RunnableParallel: https://reference.langchain.com/python/langchain-core/runnables/base/RunnableParallel
   - RunnableBranch: https://reference.langchain.com/python/langchain-core/runnables/branch/RunnableBranch
-  - RunnablePassthrough: https://reference.langchain.com/python/langchain-core/runnables/passthrough/RunnablePassthrough
-  - RunnableLambda: https://reference.langchain.com/python/langchain-core/runnables/base/RunnableLambda
   - 源码: https://github.com/langchain-ai/langchain/blob/master/libs/core/langchain_core/runnables/
 
 安装：
@@ -25,12 +23,13 @@ from langchain_core.runnables import RunnableBranch, RunnableLambda, RunnablePas
 # ========================= 模型配置 =========================
 
 def get_llm():
-    from langchain_community.chat_models import ChatZhipuAI
+    from langchain_community.chat_models import ChatTongyi
     import os
-    return ChatZhipuAI(
-        model="glm-4.7",
-        api_key=os.environ.get("ZHIPUAI_API_KEY"),
+    llm = ChatTongyi(
+        model="qwen-plus",
+        dashscope_api_key=os.environ.get("ali_API_KEY"),
     )
+    return llm
 
 
 # ============================================================
@@ -51,22 +50,61 @@ def demo_parallel():
          注意：直接赋值给变量（chain = {"k": r1}）仍然是 dict，不能调用 .invoke()。
     """
     llm = get_llm()
-    
+
     # ---- 方式 1：显式构造 ----
-    # TODO
-    pass
+    parallel = RunnableParallel(
+        chinese=ChatPromptTemplate.from_messages([
+            ("human", "用中文一句话回答：{question}")
+        ]) | llm | StrOutputParser(),
+        english=ChatPromptTemplate.from_messages([
+            ("human", "Answer in English,One sentence: {question}")
+        ]) | llm | StrOutputParser(),
+    )
+    result = parallel.invoke({"question": "什么是 Python"})
+
+    print("=== 方式 1：显式构造 RunnableParallel ===")
+    print(f"类型: {type(parallel).__name__}")
+    print(f"中文: {result['chinese']}")
+    print(f"English: {result['english']}")
+    print()
 
     # ---- 方式 2a：dict 在 | 右侧 ----
     # StrOutputParser 的输出（str）分发给两个分支
     print("=== 方式 2a：dict 在 | 右侧 ===")
-    # TODO
-    pass
+
+    def print_result(result):
+        print(f"结果为:{result}")
+        return result
+    pipeline_right = (
+        ChatPromptTemplate.from_messages([("human", "用一句话回答：{question}")])
+        | llm
+        | StrOutputParser()
+        | RunnableLambda(print_result)
+        | {
+            "original": print_result,
+            "length": lambda x: f"共 {len(x)} 个字符",
+        }
+    )
+    result2a = pipeline_right.invoke({"question": "什么是 AI"})
+
+    print(f"原始回答: {result2a['original']}")
+    print(f"字符统计: {result2a['length']}")
+    print()
 
     # ---- 方式 2b：dict 在 | 左侧 ----
     # 同一个输入分发给两个不同的 prompt+llm 链
     print("=== 方式 2b：dict 在 | 左侧 ===")
-    # TODO
-    pass
+    prompt1 = ChatPromptTemplate.from_messages([("human", "用中文一句话回答：{question}")])
+    prompt2 = ChatPromptTemplate.from_messages([("human", "用英文一句话回答：{question}")])
+    pipeline_left = {
+        "cn": prompt1 | llm | StrOutputParser(),
+        "en": prompt2 | llm | StrOutputParser(),
+    } | RunnableLambda(print_result)
+    result2b = pipeline_left.invoke({"question": "什么是 Python"})
+
+    print(f"中文: {result2b['cn']}")
+    print(f"英文: {result2b['en']}")
+    print()
 
     # ---- 常见错误示范 ----
     # wrong = {"key": llm}

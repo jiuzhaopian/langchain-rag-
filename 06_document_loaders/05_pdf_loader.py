@@ -31,7 +31,8 @@ try:
     from langchain_core.documents.base import Blob
     from langchain_community.document_loaders.parsers import RapidOCRBlobParser
     from langchain_community.document_loaders.parsers import LLMImageBlobParser
-    from langchain_community.chat_models import ChatZhipuAI
+    from langchain_community.chat_models import ChatTongyi
+    from langchain_openai import ChatOpenAI
     _IMAGE_OCR_AVAILABLE = True
 except ImportError:
     _IMAGE_OCR_AVAILABLE = False
@@ -49,8 +50,14 @@ def demo_basic(pdf_path):
     """
     print("=== 演示 1：PyPDFLoader 基本用法 ===")
 
-    #TODO
-    pass
+    loader = PyPDFLoader(pdf_path)
+    docs = loader.load()
+
+    print(f"PDF 共 {len(docs)} 页")
+    for i, doc in enumerate(docs):
+        content_preview = doc.page_content[:80].replace("\n", " ")
+        print(f"  第 {i+1} 页: {content_preview}...")
+        print(f"    元数据: page={doc.metadata.get('page')}, source={os.path.basename(doc.metadata.get('source', ''))}")
 
 
 # ============================================================
@@ -152,6 +159,9 @@ def _patch_pypdf_extract_images():
                     image_bytes = io.BytesIO()
                     # 修复: 删掉了原代码中 "if image_bytes.getbuffer().nbytes == 0: continue"
                     # 新建的 BytesIO 永远为空，导致所有图片被跳过
+                    # 修复: (H, W, 1) 单通道图片 PIL 无法处理，需要 squeeze 为 (H, W)
+                    if np_image.ndim == 3 and np_image.shape[2] == 1:
+                        np_image = np_image.squeeze(axis=2)
                     Image.fromarray(np_image).save(image_bytes, format="PNG")
                     blob = Blob.from_data(
                         image_bytes.getvalue(), mime_type="image/png"
@@ -213,18 +223,40 @@ def demo_extract_images(pdf_path):
         print(f"Page {d.metadata.get('page')}:")
         print(d.page_content)
 
-    # --- 4b: LLMImageBlobParser（智谱 glm-4.6v 多模态）---
-    print("\n--- 4b: PyPDFLoader + LLMImageBlobParser（智谱 glm-4.6v）---")
-    # TODO
-    pass
+    # --- 4b: LLMImageBlobParser（阿里云通义千问视觉模型）---
+    print("\n--- 4b: PyPDFLoader + LLMImageBlobParser（通义千问 qwen-vl-plus）---")
+
+
+    loader = PyPDFLoader(
+        pdf_path,
+        extract_images=True,
+        images_parser=LLMImageBlobParser(
+            model=ChatOpenAI(
+                model="qwen-vl-plus",
+                openai_api_key=os.environ.get("ali_API_KEY"),
+                openai_api_base="https://dashscope.aliyuncs.com/compatible-mode/v1",
+            )
+        ),
+    )
+    docs = loader.load()
+    for d in docs:
+        print(f"Page {d.metadata.get('page')}:")
+        print(d.page_content)
 
 
 if __name__ == "__main__":
-    demo_basic(os.path.join(DATA_DIR, "sample.pdf"))
-    demo_lazy_load(os.path.join(DATA_DIR, "sample.pdf"))
+    demo_basic(os.path.join(DATA_DIR, "报销制度.pdf"))
+    demo_lazy_load(os.path.join(DATA_DIR, "报销制度.pdf"))
     demo_layout_mode()
 
-    if not os.environ.get("ZHIPUAI_API_KEY"):
-        print("跳过: 未设置 ZHIPUAI_API_KEY 环境变量")
+    if not os.environ.get("ali_API_KEY"):
+        print("跳过: 未设置 ali_API_KEY 环境变量")
         exit(1)
-    demo_extract_images(os.path.join(DATA_DIR, "test_invoice.pdf"))
+
+        # 修复：改用已存在的 PDF，或先检查文件是否存在
+    invoice_path = os.path.join(DATA_DIR, "test_invoice.pdf")
+    if not os.path.exists(invoice_path):
+        print(f"跳过演示4: {invoice_path} 不存在，改用报销制度.pdf")
+        invoice_path = os.path.join(DATA_DIR, "报销制度.pdf")
+
+    demo_extract_images(invoice_path)

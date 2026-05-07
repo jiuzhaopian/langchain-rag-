@@ -56,9 +56,19 @@ def demo_basic():
         "机器学习是人工智能的一个分支",
         "深度学习是机器学习的子领域",
     ]
+    vectorstore = Chroma.from_texts(texts, embeddings, collection_metadata=CHROMA_COLLECTION_METADATA)
 
-    # TODO
-    pass
+    print("=== demo_1: Chroma 基本搜索 ===")
+    print(f"存入 {len(texts)} 条文本\n")
+
+    results = vectorstore.similarity_search("AI 技术", k=2)
+    for i, doc in enumerate(results):
+        print(f"  [{i+1}] {doc.page_content}")
+
+    # 清理内存集合
+    vectorstore.delete_collection()
+
+    print()
 
 
 # ============================================================
@@ -88,8 +98,37 @@ def demo_metadata_filter():
 
     print("=== demo_2: metadata 过滤 ===")
 
-    #TODO
-    pass
+    # 搜索 + 过滤
+    results = vectorstore.similarity_search(
+        "编程教程",
+        k=5,
+        filter={"lang": "python"},  # 只返回 lang=python 的文档
+    )
+    print("过滤条件: lang=python")
+    for i, doc in enumerate(results):
+        print(f"  [{i+1}] {doc.page_content} | metadata: {doc.metadata}")
+
+    print()
+
+    # 多条件过滤
+    results = vectorstore.similarity_search(
+        "进阶内容",
+        k=5,
+        filter={
+            "$and": [
+                {"lang": "python"},
+                {"level": "advanced"}
+            ]
+        },
+    )
+    print("过滤条件: lang=python and level=advanced")
+    for i, doc in enumerate(results):
+        print(f"  [{i+1}] {doc.page_content} | metadata: {doc.metadata}")
+
+    # 清理
+    vectorstore.delete_collection()
+
+    print()
 
 
 # ============================================================
@@ -104,6 +143,7 @@ def demo_persistence():
     import tempfile
     import os
     import shutil
+    import time
 
     embeddings = get_embeddings()
 
@@ -112,26 +152,33 @@ def demo_persistence():
 
     # 创建并持久化
     vs1 = Chroma.from_texts(texts, embeddings, persist_directory=persist_dir,
-                                 collection_metadata=CHROMA_COLLECTION_METADATA)
+                            collection_metadata=CHROMA_COLLECTION_METADATA)
     print("=== demo_3: 持久化 ===")
     print(f"创建: {len(texts)} 条文档")
     print(f"保存目录: {persist_dir}")
     print(f"目录内容: {os.listdir(persist_dir)}\n")
 
     # 加载已有集合
-    vs2 = Chroma(persist_directory=persist_dir, embedding_function=embeddings, collection_metadata=CHROMA_COLLECTION_METADATA)
+    vs2 = Chroma(persist_directory=persist_dir, embedding_function=embeddings,
+                 collection_metadata=CHROMA_COLLECTION_METADATA)
     results = vs2.similarity_search("测试文档", k=2)
     print("加载后搜索 '测试文档':")
     for i, doc in enumerate(results):
-        print(f"  [{i+1}] {doc.page_content}")
+        print(f"  [{i + 1}] {doc.page_content}")
 
-    # 清理
-    vs2.delete_collection()
-    shutil.rmtree(persist_dir)
+    # 清理：先删除集合，再等待一下，最后删除目录
+    try:
+        vs2.delete_collection()
+        time.sleep(0.5)  # 给 Windows 一点时间释放文件
+    except Exception as e:
+        print(f"清理时出现警告（可忽略）: {e}")
+
+    try:
+        shutil.rmtree(persist_dir, ignore_errors=True)
+    except Exception as e:
+        print(f"无法删除临时目录: {e}")
 
     print()
-
-
 # ============================================================
 # 演示 4：增量添加 + 删除
 # ============================================================
@@ -143,6 +190,7 @@ def demo_add_delete():
     """
     import tempfile
     import shutil
+    import time
 
     embeddings = get_embeddings()
     persist_dir = tempfile.mkdtemp()
@@ -174,12 +222,19 @@ def demo_add_delete():
     for doc in results:
         print(f"  - {doc.page_content}")
 
-    # 清理
-    vectorstore.delete_collection()
-    shutil.rmtree(persist_dir)
+    # 清理：先删除集合，等待文件释放，再删除目录
+    try:
+        vectorstore.delete_collection()
+        time.sleep(0.5)  # 给 Windows 时间释放文件句柄
+    except Exception as e:
+        print(f"清理集合时出现警告: {e}")
+
+    try:
+        shutil.rmtree(persist_dir, ignore_errors=True)
+    except Exception as e:
+        print(f"无法删除临时目录: {e}")
 
     print()
-
 
 # ============================================================
 # 演示 5：InMemory vs FAISS vs Chroma 三者对比
@@ -193,6 +248,7 @@ def demo_comparison():
     from langchain_community.vectorstores import FAISS
     import tempfile
     import shutil
+    import time
 
     embeddings = get_embeddings()
     texts = ["LangChain 框架", "PyTorch 框架", "React 框架"]
@@ -207,10 +263,21 @@ def demo_comparison():
 
     # Chroma
     persist_dir = tempfile.mkdtemp()
-    vs_chroma = Chroma.from_texts(texts, embeddings, persist_directory=persist_dir, collection_metadata=CHROMA_COLLECTION_METADATA)
+    vs_chroma = Chroma.from_texts(texts, embeddings, persist_directory=persist_dir,
+                                  collection_metadata=CHROMA_COLLECTION_METADATA)
     r_chroma = [d.page_content for d in vs_chroma.similarity_search("AI框架", k=2)]
-    vs_chroma.delete_collection()
-    shutil.rmtree(persist_dir)
+
+    # 清理 Chroma
+    try:
+        vs_chroma.delete_collection()
+        time.sleep(0.5)
+    except Exception as e:
+        print(f"清理 Chroma 时出现警告: {e}")
+
+    try:
+        shutil.rmtree(persist_dir, ignore_errors=True)
+    except Exception as e:
+        print(f"无法删除 Chroma 临时目录: {e}")
 
     print("=== demo_5: 三种 VectorStore 搜索结果 ===")
     print(f"InMemory: {r_inmem}")
@@ -231,8 +298,6 @@ def demo_comparison():
 """)
 
     print()
-
-
 if __name__ == "__main__":
     import subprocess
     try:

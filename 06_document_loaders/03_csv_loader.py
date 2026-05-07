@@ -58,8 +58,16 @@ def demo_csv_basic(csv_path):
     page_content 格式：每列一行，"列名: 值"，多列用换行符拼接。
     """
     print("=== 演示 1：CSVLoader 基本用法 ===")
-    # TODO
-    pass
+
+    loader = CSVLoader(csv_path, encoding="utf-8")
+    docs = loader.load()
+
+    print(f"加载了 {len(docs)} 个文档（CSV 文件有 3 行数据 + 1 行表头）")
+    for doc in docs:
+        print(f"  【metadata】row:{doc.metadata.get('row', '?')}; source: {doc.metadata.get('source', 'x')}")
+        print(f"  【内容】:\n {doc.page_content}")
+
+    print(f"\n元数据字段: {list(docs[0].metadata.keys())}")
 
 
 # ============================================================
@@ -76,7 +84,7 @@ def demo_csv_advanced(csv_path):
     # metadata_columns:指定哪些列从 page_content 中移除，改放到 metadata 里
     # content_columns: 指定只有这些列进 page_content，其余列全部丢弃（既不进 content 也不进 metadata）
 
-    loader = CSVLoader(csv_path, source_column="name")
+    loader = CSVLoader(csv_path, source_column="name",encoding="utf-8")
     docs = loader.load()
     for doc in docs:
         print(f"  【metadata】row {doc.metadata.get('row', '?')}; source: {doc.metadata.get('source', 'x')}")
@@ -91,6 +99,7 @@ def demo_csv_advanced(csv_path):
     # 更多参数见: https://docs.python.org/3/library/csv.html
     loader2 = CSVLoader(
         csv_path,
+        encoding="utf-8",
         csv_args={
             "delimiter": ",",   # 字段分隔符
             "quotechar": '"',   # 引号字符
@@ -110,7 +119,7 @@ def demo_csv_no_header(no_header_path):
     print("\n=== 演示 3：无表头 CSV ===")
 
     # 不指定 fieldnames，第一行数据会被当作表头丢失
-    loader_no_names = CSVLoader(no_header_path)
+    loader_no_names = CSVLoader(no_header_path,encoding="utf-8")
     docs_no_names = loader_no_names.load()
     print(f"不指定 fieldnames: {len(docs_no_names)} 个文档")
     for doc in docs_no_names:
@@ -119,7 +128,8 @@ def demo_csv_no_header(no_header_path):
     # 指定 fieldnames，所有行都会被加载为 Document
     loader_with_names = CSVLoader(
         no_header_path,
-        csv_args={"fieldnames": ["name", "description", "category"]},
+        encoding="utf-8",
+        csv_args={"fieldnames": ["name", "description", "category"]},#数据中无表头，解析时可以创建
     )
     docs_with_names = loader_with_names.load()
     print(f"\n指定 fieldnames: {len(docs_with_names)} 个文档")

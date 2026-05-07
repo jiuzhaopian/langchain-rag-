@@ -1,4 +1,5 @@
-"""02_pydantic_parser.py - PydanticOutputParser (结构化解析)
+"""
+LangChain Output Parsers - PydanticOutputParser (结构化解析)
 
 PydanticOutputParser 是最实用的 Output Parser：
   - 用 Pydantic 模型定义输出结构
@@ -35,12 +36,13 @@ from langchain_core.prompts import ChatPromptTemplate
 # ========================= 模型配置 =========================
 
 def get_llm():
-    from langchain_community.chat_models import ChatZhipuAI
+    from langchain_community.chat_models import ChatTongyi
     import os
-    return ChatZhipuAI(
-        model="glm-4.7",
-        api_key=os.environ.get("ZHIPUAI_API_KEY"),
+    llm = ChatTongyi(
+        model="qwen-plus",
+        dashscope_api_key=os.environ.get("ali_API_KEY"),
     )
+    return llm
 
 
 # ============================================================

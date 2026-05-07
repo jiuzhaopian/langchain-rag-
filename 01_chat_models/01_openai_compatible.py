@@ -34,8 +34,17 @@ def demo_dashscope_openai_compatible():
     """
     from langchain_openai import ChatOpenAI
 
-    #TODO
-    pass
+    llm = ChatOpenAI(
+        model = "qwen-plus",
+        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+        api_key = os.environ.get("ali_API_KEY"),
+        temperature=0.7
+    )
+    respond = llm.invoke("用一句话介绍langchain")
+    print(respond.model_dump_json(indent=2))
+
+
+
 
 
 # ============================================================
@@ -49,8 +58,20 @@ def demo_deepseek():
     """
     from langchain_openai import ChatOpenAI
 
-    #TODO
-    pass
+    from langchain_openai import ChatOpenAI
+
+    llm = ChatOpenAI(
+        model="deepseek-chat",  # DeepSeek 聊天模型
+        base_url="https://api.deepseek.com",  # DeepSeek 端点
+        api_key=os.environ.get("deepseek_API_KEY"),
+        temperature=0.7,
+    )
+
+    response = llm.invoke("用一句话介绍 LangChain")
+    print(response.model_dump_json(indent=2))
+    print(f"[DeepSeek] {response.content}")
+    print(f"类型: {type(response).__name__}")
+    print(f"Token: {response.usage_metadata}")
 
 
 # ============================================================
@@ -59,7 +80,7 @@ def demo_deepseek():
 
 if __name__ == "__main__":
     # DashScope 兼容模式
-    if os.environ.get("DASHSCOPE_API_KEY"):
+    if os.environ.get("ali_API_KEY"):
         print("=== 1. DashScope OpenAI 兼容模式 ===")
         demo_dashscope_openai_compatible()
     else:
@@ -68,7 +89,7 @@ if __name__ == "__main__":
     print()
 
     # DeepSeek
-    if os.environ.get("DEEPSEEK_API_KEY"):
+    if os.environ.get("deepseek_API_KEY"):
         print("=== 2. DeepSeek OpenAI 兼容模式===")
         demo_deepseek()
     else:

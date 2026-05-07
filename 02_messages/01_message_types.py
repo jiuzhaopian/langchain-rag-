@@ -25,9 +25,9 @@ import os
 
 def get_llm(temperature=0):
     """获取智谱 GLM 模型实例"""
-    from langchain_community.chat_models import ChatZhipuAI
-    return ChatZhipuAI(
-        model="glm-4.7",
+    from langchain_deepseek import ChatDeepSeek
+    return ChatDeepSeek(
+        model="deepseek-chat",
         temperature=temperature,
     )
 
@@ -48,9 +48,14 @@ def demo_basic_messages():
     from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
     llm = get_llm()
-    #TODO
-    pass
+    messages = [
+        SystemMessage(content="你是一个ai翻译助手，英译中，只翻译不解释"),
+        HumanMessage(content="I love programming."),
 
+    ]
+    response = llm.invoke(messages)
+    print(response)
+    print(response.content)
 
 # ============================================================
 # 演示 2：ToolMessage 完整流程
@@ -163,9 +168,9 @@ def demo_aimessage_details():
 # ============================================================
 
 if __name__ == "__main__":
-    if not os.environ.get("ZHIPUAI_API_KEY"):
-        print("请设置 ZHIPUAI_API_KEY 环境变量")
-        print("  export ZHIPUAI_API_KEY='...'")
+    if not os.environ.get("DEEPSEEK_API_KEY"):
+        print("请设置 DS_API_KEY 环境变量")
+        print("  export DS_API_KEY='...'")
         exit(1)
 
     # 演示 1：基本消息

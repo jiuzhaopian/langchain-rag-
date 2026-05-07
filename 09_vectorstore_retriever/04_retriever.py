@@ -57,11 +57,21 @@ def demo_similarity():
     """
     vs = create_vectorstore()
 
+
+
     print("=== demo_1: similarity（纯相似度） ===")
     print("search_type='similarity', k=3\n")
 
-    #TODO
-    pass
+    retriever = vs.as_retriever(service_type="similarity", search_kwargs={"k": 3})
+    results = retriever.invoke("python编程")
+    print("similarity 结果:")
+    for i, doc in enumerate(results):
+        print(f"  [{i + 1}] {doc.page_content}")
+        print(f"       metadata: {doc.metadata}")
+
+    print()
+
+
 
 
 # ============================================================
