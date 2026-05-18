@@ -281,7 +281,7 @@ class RAGEngine:
 
         return chain
 
-        chain = RunnableParallel(
+        chain = RunnqableParallel(
             context = retriever | format_docs,
             question = RunnablePassthrough()
         ) | RunnableLambda(lambda input:{
